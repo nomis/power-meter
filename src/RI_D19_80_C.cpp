@@ -88,7 +88,7 @@ bool RI_D19_80_C::readMeasurements() {
 				|| modbus.getResponseBuffer(0x0008) != modbus.getResponseBuffer(0x000A)) {
 			SerialUSB.print(first ? "# " : "; ");
 			first = false;
-			SerialUSB.print("0x0007..0x000A");
+			SerialUSB.print("0x0007..0x000A = ");
 			for (uint8_t i = 0x0007; i <= 0x000A; i++) {
 				if (i > 0x0007) {
 					SerialUSB.print(" ");
