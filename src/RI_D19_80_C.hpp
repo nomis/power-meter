@@ -61,13 +61,36 @@ class RI_D19_80_C: public PowerMeter {
 public:
 	RI_D19_80_C(ModbusMaster &modbus);
 	virtual ~RI_D19_80_C();
+	void setPassword(uint32_t value);
+	bool writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
+	bool writeBaudRate(unsigned int baudRate);
+	bool writeAddress(uint8_t address);
+	bool writePassword(uint32_t value);
 
 protected:
 	virtual bool readSerialNumber();
 	virtual bool readMeasurements();
 	virtual String model() const;
 
+	static constexpr uint32_t maximumEnergy = 99999999; // daW·h (6+2 record, 5+1 display)
 	static constexpr bool debug = true;
 
 	ModbusMaster &modbus;
+
+private:
+	/**
+	Transmit password:
+		## 28 FE 01 00 02 04 ** ** ** ** [CRC16]
+
+	Success:
+		## 28 FE 01 00 01 [CRC16]
+
+	Failure:
+		## A8 FE 01 00 02 [CRC16]
+
+	Write registers within 10 seconds of success.
+	*/
+	bool transmitPassword();
+
+	uint32_t password;
 };

@@ -135,3 +135,142 @@ bool RI_D19_80_C::readMeasurements() {
 
 	return true;
 }
+
+void RI_D19_80_C::setPassword(uint32_t value) {
+	password = value;
+}
+
+bool RI_D19_80_C::transmitPassword() {
+	uint8_t ret;
+
+	ret = modbus.writePassword(password);
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	if (modbus.getResponseBuffer(0) != 0xFE01
+			|| modbus.getResponseBuffer(1) != 0x0001) {
+		return false;
+	}
+
+	return true;
+}
+
+bool RI_D19_80_C::writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4) {
+	uint8_t ret;
+
+	if (!transmitPassword()) {
+		return false;
+	}
+
+	modbus.beginTransmission(0x0007);
+
+	// Active Energy (Total) is automatically calculated
+	modbus.send((uint16_t)0);
+	modbus.send((uint16_t)0);
+
+	if (count >= 1) {
+		value1 %= maximumEnergy;
+		modbus.send((uint16_t)(value1 >> 16));
+		modbus.send((uint16_t)value1);
+	}
+	if (count >= 2) {
+		value2 %= maximumEnergy;
+		modbus.send((uint16_t)(value2 >> 16));
+		modbus.send((uint16_t)value2);
+	}
+	if (count >= 3) {
+		value3 %= maximumEnergy;
+		modbus.send((uint16_t)(value3 >> 16));
+		modbus.send((uint16_t)value3);
+	}
+	if (count >= 4) {
+		value4 %= maximumEnergy;
+		modbus.send((uint16_t)(value4 >> 16));
+		modbus.send((uint16_t)value4);
+	}
+
+	ret = modbus.writeMultipleRegisters();
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	return true;
+}
+
+bool RI_D19_80_C::writeBaudRate(unsigned int baudRate) {
+	uint8_t ret;
+
+	switch (baudRate) {
+		case 1200:
+			baudRate = 1;
+			break;
+		case 2400:
+			baudRate = 2;
+			break;
+		case 4800:
+			baudRate = 3;
+			break;
+		case 9600:
+			baudRate = 4;
+			break;
+		default:
+			return false;
+	}
+
+	if (!transmitPassword()) {
+		return false;
+	}
+
+	modbus.beginTransmission(0x002A);
+	modbus.send((uint16_t)baudRate);
+
+	ret = modbus.writeMultipleRegisters();
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	return true;
+}
+
+bool RI_D19_80_C::writeAddress(uint8_t address) {
+	uint8_t ret;
+
+	if (address > 247) {
+		return false;
+	}
+
+	if (!transmitPassword()) {
+		return false;
+	}
+
+	modbus.beginTransmission(0x002B);
+	modbus.send((uint16_t)address);
+
+	ret = modbus.writeMultipleRegisters();
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	return true;
+}
+
+bool RI_D19_80_C::writePassword(uint32_t value) {
+	uint8_t ret;
+
+	if (!transmitPassword()) {
+		return false;
+	}
+
+	modbus.beginTransmission(0x002C);
+	modbus.send((uint16_t)(value >> 16));
+	modbus.send((uint16_t)value);
+
+	ret = modbus.writeMultipleRegisters();
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	setPassword(value);
+	return true;
+}
