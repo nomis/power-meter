@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef POWER_METER_RI_D19_80_C_HPP
+#define POWER_METER_RI_D19_80_C_HPP
+
 #include <stdint.h>
 
 #include <PowerMeter.hpp>
@@ -94,3 +97,5 @@ private:
 
 	uint32_t password;
 };
+
+#endif

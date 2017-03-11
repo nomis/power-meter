@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef POWER_METER_MAIN_HPP
+#define POWER_METER_MAIN_HPP
+
 #include <stdint.h>
 #include <Arduino.h>
 
@@ -39,3 +42,5 @@ constexpr unsigned int CHAR_BITS = 10; // 8N1
 constexpr unsigned int INTER_FRAME_BITS = INTER_FRAME_CHARS * CHAR_BITS;
 constexpr unsigned int MS_PER_S = 1000;
 constexpr unsigned long INTER_FRAME_MILLIS = (INTER_FRAME_BITS * MS_PER_S / INPUT_BAUD_RATE) + 1;
+
+#endif

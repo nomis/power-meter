@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef POWER_METER_POWERMETER_HPP
+#define POWER_METER_POWERMETER_HPP
+
 #include <Arduino.h>
 
 #include <Decimal.hpp>
@@ -53,3 +56,5 @@ protected:
 private:
 	static size_t printReading(Print &p, bool &first, const char *name, const Decimal &value) __attribute__((warn_unused_result));
 };
+
+#endif

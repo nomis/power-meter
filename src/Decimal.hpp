@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef POWER_METER_DECIMAL_HPP
+#define POWER_METER_DECIMAL_HPP
+
 #include <stdint.h>
 #include <Arduino.h>
 
@@ -38,3 +41,5 @@ private:
 	bool coefficientSigned; ///< To be able to store both uint32_t and avoid using int64_t
 	int8_t exponent;
 };
+
+#endif
