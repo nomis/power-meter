@@ -61,9 +61,10 @@ class RI_D19_80_C: public PowerMeter {
 public:
 	RI_D19_80_C(ModbusMaster &modbus);
 	virtual ~RI_D19_80_C();
-	virtual bool read();
 
 protected:
+	virtual bool readSerialNumber();
+	virtual bool readMeasurements();
 	virtual String model() const;
 
 	static constexpr bool debug = true;

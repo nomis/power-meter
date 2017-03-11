@@ -24,11 +24,13 @@ class PowerMeter: public Printable {
 public:
 	PowerMeter();
 	virtual ~PowerMeter();
-	virtual bool read() = 0;
+	bool read();
 	virtual size_t printTo(Print &p) const __attribute__((warn_unused_result));
 
 protected:
-	void clearReadings();
+	void clearMeasurements();
+	virtual bool readSerialNumber() = 0;
+	virtual bool readMeasurements() = 0;
 	virtual String model() const = 0;
 
 	String serialNumber;

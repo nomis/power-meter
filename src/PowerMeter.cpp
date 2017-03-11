@@ -26,7 +26,19 @@ PowerMeter::~PowerMeter() {
 
 }
 
-void PowerMeter::clearReadings() {
+bool PowerMeter::read() {
+	if (serialNumber.length() == 0) {
+		if (!readSerialNumber()) {
+			return false;
+		}
+	}
+
+	clearMeasurements();
+
+	return readMeasurements();
+}
+
+void PowerMeter::clearMeasurements() {
 	voltage = Decimal();
 	current = Decimal();
 	frequency = Decimal();

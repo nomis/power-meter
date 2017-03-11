@@ -34,28 +34,29 @@ static char bcd2char(uint16_t value) {
 	return value < 10 ? ('0' + value) : ('A' + (value - 10));
 }
 
-bool RI_D19_80_C::read() {
+bool RI_D19_80_C::readSerialNumber() {
+	constexpr uint8_t len = 3;
 	uint8_t ret;
 
-	if (serialNumber.length() == 0) {
-		constexpr uint8_t len = 3;
-
-		ret = modbus.readHoldingRegisters(0x0027, len);
-		if (ret != ModbusMaster::ku8MBSuccess) {
-			return false;
-		}
-
-		for (uint8_t i = 0; i < len; i++) {
-			uint16_t value = modbus.getResponseBuffer(i);
-
-			serialNumber += bcd2char((value >> 12) & 0xF);
-			serialNumber += bcd2char((value >> 8) & 0xF);
-			serialNumber += bcd2char((value >> 4) & 0xF);
-			serialNumber += bcd2char(value & 0xF);
-		}
+	ret = modbus.readHoldingRegisters(0x0027, len);
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
 	}
 
-	clearReadings();
+	for (uint8_t i = 0; i < len; i++) {
+		uint16_t value = modbus.getResponseBuffer(i);
+
+		serialNumber += bcd2char((value >> 12) & 0xF);
+		serialNumber += bcd2char((value >> 8) & 0xF);
+		serialNumber += bcd2char((value >> 4) & 0xF);
+		serialNumber += bcd2char(value & 0xF);
+	}
+
+	return true;
+}
+
+bool RI_D19_80_C::readMeasurements() {
+	uint8_t ret;
 
 	ret = modbus.readHoldingRegisters(0x0000, debug ? 0x0027 : 0x0026);
 	if (ret != ModbusMaster::ku8MBSuccess) {
@@ -131,5 +132,6 @@ bool RI_D19_80_C::read() {
 			SerialUSB.println();
 		}
 	}
+
 	return true;
 }
