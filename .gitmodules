@@ -1,4 +1,4 @@
 [submodule "ModbusMaster"]
-	path = lib/ModbusMaster
+	path = arduino/lib/ModbusMaster
 	url = https://github.com/lp0/ModbusMaster/
 	branch = sa
