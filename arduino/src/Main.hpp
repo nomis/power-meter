@@ -28,8 +28,8 @@ constexpr auto *output = &SerialUSB;
 constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
 
 // RS485
-constexpr int DE_PIN = 2;
-constexpr int RE_PIN = 3;
+constexpr int DE_PIN = 4;
+constexpr int RE_PIN = 5;
 
 // Modbus
 constexpr auto *input = &Serial1;
