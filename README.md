@@ -5,14 +5,14 @@ Readings are taken every second and then output in YAML format.
 ## Hardware Interface
 MAX485 with the following pin connections:
 
-| Arduino | MAX485 |
-| ------- | ------ |
-| +5V     | VCC    |
-| ⏚ (GND) | GND    |
-| 0 (TX)  | DI     |
-| 1 (RX)  | RO     |
-| 4       | DE     |
-| 5       | RE     |
+| MAX485 | Arduino Micro |
+| ------ | ------------- |
+| VCC    | +5V           |
+| GND    | ⏚ (GND)       |
+| DI     | 0 (TX)        |
+| RO     | 1 (RX)        |
+| DE     | 4             |
+| RE     | 5             |
 
 # Supported Power Meters
 * Rayleigh Instruments RI-D19-80-C: 230V 5/80A LCD Single Phase Energy modbus – 80A Direct With RS485 Output
