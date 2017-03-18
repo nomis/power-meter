@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <Main.hpp>
+#include "Main.hpp"
 #include <ModbusMaster.h>
-#include <RI_D19_80_C.hpp>
+#include "RI_D19_80_C.hpp"
 
 ModbusMaster modbus;
 RI_D19_80_C meter(modbus);
@@ -55,9 +55,16 @@ static void logReceive(const uint8_t *data, size_t length, uint8_t status) {
 	output->println(")");
 }
 
+static void indicateStatus(bool success) {
+	if (LED_PIN >= 0) {
+		digitalWrite(LED_PIN, success ? HIGH : LOW);
+	}
+}
+
 void setup() {
-	pinMode(LED_PIN, OUTPUT);
-	digitalWrite(LED_PIN, LOW);
+	if (LED_PIN >= 0) {
+		pinMode(LED_PIN, OUTPUT);
+	}
 
 	pinMode(DE_PIN, OUTPUT);
 	digitalWrite(DE_PIN, LOW);
@@ -71,6 +78,10 @@ void setup() {
 		modbus.logReceive(logReceive);
 	}
 
+#ifdef ARDUINO_ESP8266
+	input->swap();
+#endif
+
 	input->begin(INPUT_BAUD_RATE);
 	modbus.begin(METER_ADDRESS, *input);
 
@@ -83,7 +94,7 @@ void loop() {
 	if (*output) {
 		if (meter.read()) {
 			output->println(meter);
-			digitalWrite(LED_PIN, HIGH);
+			indicateStatus(true);
 
 			constexpr long wait = 1000;
 			unsigned long duration = millis() - start;
@@ -91,10 +102,10 @@ void loop() {
 				delay(wait - duration);
 			}
 		} else {
-			digitalWrite(LED_PIN, LOW);
+			indicateStatus(false);
 			delay(100);
 		}
 	} else {
-		digitalWrite(LED_PIN, LOW);
+		indicateStatus(false);
 	}
 }

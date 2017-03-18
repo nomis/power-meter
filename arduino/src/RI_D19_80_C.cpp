@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <RI_D19_80_C.hpp>
+#include "RI_D19_80_C.hpp"
+#include "Main.hpp"
 
-RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus_) : modbus(modbus_) {
+RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus) : modbus(modbus) {
 
 }
 
@@ -86,15 +87,15 @@ bool RI_D19_80_C::readMeasurements() {
 		// Check if Active Energy (Total) doesn't match Active Energy (T1)
 		if (modbus.getResponseBuffer(0x0007) != modbus.getResponseBuffer(0x0009)
 				|| modbus.getResponseBuffer(0x0008) != modbus.getResponseBuffer(0x000A)) {
-			SerialUSB.print(first ? "# " : "; ");
+			output->print(first ? "# " : "; ");
 			first = false;
-			SerialUSB.print("0x0007..0x000A = ");
+			output->print("0x0007..0x000A = ");
 			for (uint8_t i = 0x0007; i <= 0x000A; i++) {
 				if (i > 0x0007) {
-					SerialUSB.print(" ");
+					output->print(" ");
 				}
 
-				SerialUSB.print(modbus.getResponseBuffer(i), HEX);
+				output->print(modbus.getResponseBuffer(i), HEX);
 			}
 		}
 
@@ -108,28 +109,28 @@ bool RI_D19_80_C::readMeasurements() {
 		}
 
 		if (!all_zeros) {
-			SerialUSB.print(first ? "# " : "; ");
+			output->print(first ? "# " : "; ");
 			first = false;
-			SerialUSB.print("0x000B..0x0020 = ");
+			output->print("0x000B..0x0020 = ");
 			for (uint8_t i = zero_start; i <= zero_end; i++) {
 				if (i > zero_start) {
-					SerialUSB.print(" ");
+					output->print(" ");
 				}
 
-				SerialUSB.print(modbus.getResponseBuffer(i), HEX);
+				output->print(modbus.getResponseBuffer(i), HEX);
 			}
 		}
 
 		// Check for new values of unknown register 0x0026
 		if (modbus.getResponseBuffer(0x0026) != 0xF6) {
-			SerialUSB.print(first ? "# " : "; ");
+			output->print(first ? "# " : "; ");
 			first = false;
-			SerialUSB.print("0x0026 = 0x");
-			SerialUSB.print(modbus.getResponseBuffer(0x0026), HEX);
+			output->print("0x0026 = 0x");
+			output->print(modbus.getResponseBuffer(0x0026), HEX);
 		}
 
 		if (!first) {
-			SerialUSB.println();
+			output->println();
 		}
 	}
 

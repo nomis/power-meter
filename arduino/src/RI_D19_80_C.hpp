@@ -21,8 +21,8 @@
 
 #include <stdint.h>
 
-#include <PowerMeter.hpp>
-#include <ModbusMaster.h>
+#include "PowerMeter.hpp"
+#include "ModbusMaster.h"
 
 /**
 Rayleigh Instruments RI-D19-80-C

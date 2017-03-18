@@ -21,7 +21,7 @@
 
 #include <Arduino.h>
 
-#include <Decimal.hpp>
+#include "Decimal.hpp"
 
 class PowerMeter: public Printable {
 public:

@@ -16,39 +16,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <Decimal.hpp>
+#include "Decimal.hpp"
 
 Decimal::Decimal() : set(false) {
 
 }
 
-Decimal::Decimal(int8_t coefficient_, int8_t exponent_)
-	: Decimal((int32_t)coefficient_, exponent_) {
+Decimal::Decimal(int8_t coefficient, int8_t exponent)
+	: Decimal((int32_t)coefficient, exponent) {
 
 }
 
-Decimal::Decimal(uint8_t coefficient_, int8_t exponent_)
-	: Decimal((uint32_t)coefficient_, exponent_) {
+Decimal::Decimal(uint8_t coefficient, int8_t exponent)
+	: Decimal((uint32_t)coefficient, exponent) {
 
 }
 
-Decimal::Decimal(int16_t coefficient_, int8_t exponent_)
-	: Decimal((int32_t)coefficient_, exponent_) {
+Decimal::Decimal(int16_t coefficient, int8_t exponent)
+	: Decimal((int32_t)coefficient, exponent) {
 
 }
 
-Decimal::Decimal(uint16_t coefficient_, int8_t exponent_)
-	: Decimal((uint32_t)coefficient_, exponent_) {
+Decimal::Decimal(uint16_t coefficient, int8_t exponent)
+	: Decimal((uint32_t)coefficient, exponent) {
 
 }
 
-Decimal::Decimal(int32_t coefficient_, int8_t exponent_)
-	: set(true), coefficient((uint32_t)coefficient_), coefficientSigned(true), exponent(exponent_) {
+Decimal::Decimal(int32_t coefficient, int8_t exponent)
+	: set(true), coefficient((uint32_t)coefficient), coefficientSigned(true), exponent(exponent) {
 
 }
 
-Decimal::Decimal(uint32_t coefficient_, int8_t exponent_)
-	: set(true), coefficient(coefficient_), coefficientSigned(false), exponent(exponent_) {
+Decimal::Decimal(uint32_t coefficient, int8_t exponent)
+	: set(true), coefficient(coefficient), coefficientSigned(false), exponent(exponent) {
 
 }
 

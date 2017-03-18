@@ -23,16 +23,32 @@
 #include <Arduino.h>
 
 // Output
+#ifdef ARDUINO_AVR_MICRO
 constexpr int LED_PIN = 13;
 constexpr auto *output = &SerialUSB;
 constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
+#endif
+
+#ifdef ARDUINO_ESP8266_ESP12
+constexpr int LED_PIN = -1;
+constexpr auto *output = &Serial1;
+constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
+#endif
 
 // RS485
+#ifdef ARDUINO_AVR_MICRO
 constexpr int DE_PIN = 4;
 constexpr int RE_PIN = 5;
+constexpr auto *input = &Serial1;
+#endif
+
+#ifdef ARDUINO_ESP8266_ESP12
+constexpr int DE_PIN = 4;
+constexpr int RE_PIN = 5;
+constexpr auto *input = &Serial;
+#endif
 
 // Modbus
-constexpr auto *input = &Serial1;
 constexpr unsigned long INPUT_BAUD_RATE = 9600;
 constexpr uint8_t METER_ADDRESS = 0x01;
 constexpr bool LOG_MESSAGES = false;
