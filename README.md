@@ -12,7 +12,7 @@ MAX485 with the following pin connections:
 | DI     | 0 (TX)        |
 | RO     | 1 (RX)        |
 | DE     | 4             |
-| RE     | 5             |
+| R̅E̅     | 5             |
 
 # Supported Power Meters
 * Rayleigh Instruments RI-D19-80-C: 230V 5/80A LCD Single Phase Energy modbus – 80A Direct With RS485 Output
