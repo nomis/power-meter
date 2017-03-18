@@ -24,7 +24,7 @@
 
 // Output
 constexpr int LED_PIN = 13;
-constexpr auto &output = SerialUSB;
+constexpr auto *output = &SerialUSB;
 constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
 
 // RS485
@@ -32,7 +32,7 @@ constexpr int DE_PIN = 2;
 constexpr int RE_PIN = 3;
 
 // Modbus
-constexpr auto &input = Serial1;
+constexpr auto *input = &Serial1;
 constexpr unsigned long INPUT_BAUD_RATE = 9600;
 constexpr uint8_t METER_ADDRESS = 0x01;
 constexpr bool LOG_MESSAGES = false;

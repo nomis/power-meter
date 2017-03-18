@@ -36,23 +36,23 @@ static void disableTx() {
 }
 
 static void logTransmit(const uint8_t *data, size_t length) {
-	output.print("# TX");
+	output->print("# TX");
 	for (size_t i = 0; i < length; i++) {
-		output.print(" ");
-		output.print(data[i], HEX);
+		output->print(" ");
+		output->print(data[i], HEX);
 	}
-	output.println();
+	output->println();
 }
 
 static void logReceive(const uint8_t *data, size_t length, uint8_t status) {
-	output.print("# RX");
+	output->print("# RX");
 	for (size_t i = 0; i < length; i++) {
-		output.print(" ");
-		output.print(data[i], HEX);
+		output->print(" ");
+		output->print(data[i], HEX);
 	}
-	output.print(" (");
-	output.print(status, HEX);
-	output.println(")");
+	output->print(" (");
+	output->print(status, HEX);
+	output->println(")");
 }
 
 void setup() {
@@ -71,18 +71,18 @@ void setup() {
 		modbus.logReceive(logReceive);
 	}
 
-	input.begin(INPUT_BAUD_RATE);
-	modbus.begin(METER_ADDRESS, input);
+	input->begin(INPUT_BAUD_RATE);
+	modbus.begin(METER_ADDRESS, *input);
 
-	output.begin(OUTPUT_BAUD_RATE);
+	output->begin(OUTPUT_BAUD_RATE);
 }
 
 void loop() {
 	unsigned long start = millis();
 
-	if (output) {
+	if (*output) {
 		if (meter.read()) {
-			output.println(meter);
+			output->println(meter);
 			digitalWrite(LED_PIN, HIGH);
 
 			constexpr long wait = 1000;
