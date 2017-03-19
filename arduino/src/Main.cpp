@@ -78,7 +78,7 @@ void setup() {
 		modbus.logReceive(logReceive);
 	}
 
-#ifdef ARDUINO_ESP8266
+#ifdef ARDUINO_ESP8266_ESP12
 	input->swap();
 #endif
 
