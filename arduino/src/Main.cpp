@@ -16,8 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Main.hpp"
 #include <ModbusMaster.h>
+
+#include "Main.hpp"
+#include "Settings.hpp"
+#include "EthernetNetwork.hpp"
 #include "RI_D19_80_C.hpp"
 
 ModbusMaster modbus;
@@ -66,6 +69,10 @@ void setup() {
 		pinMode(LED_PIN, OUTPUT);
 	}
 
+	if (CONFIGURE_PIN >= 0) {
+		pinMode(CONFIGURE_PIN, INPUT_PULLUP);
+	}
+
 	pinMode(DE_PIN, OUTPUT);
 	digitalWrite(DE_PIN, LOW);
 	pinMode(RE_PIN, OUTPUT);
@@ -78,20 +85,31 @@ void setup() {
 		modbus.logReceive(logReceive);
 	}
 
-#ifdef ARDUINO_ESP8266_ESP12
-	input->swap();
-#endif
-
 	input->begin(INPUT_BAUD_RATE);
 	output->begin(OUTPUT_BAUD_RATE);
+
+#ifdef ARDUINO_AVR_MICRO
+	while (!*output);
+#endif
+
+#ifdef ARDUINO_ESP8266_ESP12
+	output->println();
+#endif
+
+	Settings::init();
 }
 
 void loop() {
 	unsigned long start = millis();
 
+	ethernetNetwork.loop();
+
 	if (*output) {
 		if (meter.read()) {
 			output->println(meter);
+			if (ethernetNetwork) {
+				ethernetNetwork.println(meter);
+			}
 			indicateStatus(true);
 
 			constexpr long wait = 1000;
@@ -105,5 +123,9 @@ void loop() {
 		}
 	} else {
 		indicateStatus(false);
+	}
+
+	if (CONFIGURE_PIN >= 0) {
+		ethernetNetwork.setConfigurationMode(digitalRead(CONFIGURE_PIN) == LOW);
 	}
 }

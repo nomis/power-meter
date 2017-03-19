@@ -25,12 +25,14 @@
 // Output
 #ifdef ARDUINO_AVR_MICRO
 constexpr int LED_PIN = 13;
+constexpr int CONFIGURE_PIN = -1;
 constexpr auto *output = &SerialUSB;
 constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
 #endif
 
 #ifdef ARDUINO_ESP8266_ESP12
 constexpr int LED_PIN = -1;
+constexpr int CONFIGURE_PIN = 14;
 constexpr auto *output = &Serial1;
 constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
 #endif
