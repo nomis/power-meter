@@ -62,7 +62,7 @@ Registers (values are Big-endian):
 */
 class RI_D19_80_C: public PowerMeter {
 public:
-	RI_D19_80_C(ModbusMaster &modbus);
+	RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address);
 	virtual ~RI_D19_80_C();
 	void setPassword(uint32_t value);
 	bool writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
@@ -79,6 +79,8 @@ protected:
 	static constexpr bool debug = true;
 
 	ModbusMaster &modbus;
+	Stream *io;
+	uint8_t address;
 
 private:
 	/**

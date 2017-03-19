@@ -21,7 +21,7 @@
 #include "RI_D19_80_C.hpp"
 
 ModbusMaster modbus;
-RI_D19_80_C meter(modbus);
+RI_D19_80_C meter(modbus, input, METER_ADDRESS);
 
 static void enableTx() {
 	digitalWrite(RE_PIN, HIGH);
@@ -83,8 +83,6 @@ void setup() {
 #endif
 
 	input->begin(INPUT_BAUD_RATE);
-	modbus.begin(METER_ADDRESS, *input);
-
 	output->begin(OUTPUT_BAUD_RATE);
 }
 

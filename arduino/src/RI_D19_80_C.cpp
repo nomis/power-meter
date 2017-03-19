@@ -19,7 +19,8 @@
 #include "RI_D19_80_C.hpp"
 #include "Main.hpp"
 
-RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus) : modbus(modbus) {
+RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address)
+	: modbus(modbus), io(io), address(address) {
 
 }
 
@@ -38,6 +39,8 @@ static char bcd2char(uint16_t value) {
 bool RI_D19_80_C::readSerialNumber() {
 	constexpr uint8_t len = 3;
 	uint8_t ret;
+
+	modbus.begin(address, *io);
 
 	ret = modbus.readHoldingRegisters(0x0027, len);
 	if (ret != ModbusMaster::ku8MBSuccess) {
@@ -58,6 +61,8 @@ bool RI_D19_80_C::readSerialNumber() {
 
 bool RI_D19_80_C::readMeasurements() {
 	uint8_t ret;
+
+	modbus.begin(address, *io);
 
 	ret = modbus.readHoldingRegisters(0x0000, debug ? 0x0027 : 0x0026);
 	if (ret != ModbusMaster::ku8MBSuccess) {
