@@ -14,14 +14,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 #include "RI_D19_80_C.hpp"
 #include "Main.hpp"
 
 RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address)
 	: modbus(modbus), io(io), address(address) {
-
 }
 
 RI_D19_80_C::~RI_D19_80_C() {
