@@ -35,6 +35,7 @@ EthernetNetwork ethernetNetwork;
 EthernetNetwork::EthernetNetwork() {
 #ifdef ARDUINO_ARCH_ESP8266
 	webServer.on("/", webServerRootPage);
+	webServer.on("/config", webServerConfigPage);
 	webServer.on("/save", webServerSavePage);
 	webServer.begin();
 #endif
@@ -164,6 +165,29 @@ void EthernetNetwork::loop() {
 
 #ifdef ARDUINO_ARCH_ESP8266
 void EthernetNetwork::webServerRootPage() {
+	unsigned long uptime = millis();
+	unsigned long days, hours, minutes, seconds, ms;
+	char response[64];
+
+	days = uptime / 86400000;
+	uptime %= 86400000;
+
+	hours = uptime / 3600000;
+	uptime %= 3600000;
+
+	minutes = uptime / 60000;
+	uptime %= 60000;
+
+	seconds = uptime / 1000;
+	uptime %= 1000;
+
+	ms = uptime;
+
+	snprintf(response, sizeof(response), "%03ld+%02ld:%02ld:%02ld.%03ld\n", days, hours, minutes, seconds, ms);
+	ethernetNetwork.webServer.send(200, "text/plain", response);
+}
+
+void EthernetNetwork::webServerConfigPage() {
 	String page = "<!DOCTYPE html>"
 		"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
 		"<body><form method=\"POST\" action=\"/save\">"

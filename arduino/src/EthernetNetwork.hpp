@@ -71,6 +71,7 @@ protected:
 private:
 #ifdef ARDUINO_ARCH_ESP8266
 	static void webServerRootPage();
+	static void webServerConfigPage();
 	static void webServerSavePage();
 
 	ESP8266WebServer webServer{80};
