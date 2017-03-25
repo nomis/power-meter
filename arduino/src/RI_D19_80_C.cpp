@@ -148,6 +148,8 @@ void RI_D19_80_C::setPassword(uint32_t value) {
 bool RI_D19_80_C::transmitPassword() {
 	uint8_t ret;
 
+	modbus.begin(address, *io);
+
 	ret = modbus.writePassword(password);
 	if (ret != ModbusMaster::ku8MBSuccess) {
 		return false;
@@ -168,6 +170,7 @@ bool RI_D19_80_C::writeActiveEnergy(unsigned int count, uint32_t value1, uint32_
 		return false;
 	}
 
+	modbus.begin(address, *io);
 	modbus.beginTransmission(0x0007);
 
 	// Active Energy (Total) is automatically calculated
@@ -227,6 +230,7 @@ bool RI_D19_80_C::writeBaudRate(unsigned int baudRate) {
 		return false;
 	}
 
+	modbus.begin(address, *io);
 	modbus.beginTransmission(0x002A);
 	modbus.send((uint16_t)baudRate);
 
@@ -249,6 +253,7 @@ bool RI_D19_80_C::writeAddress(uint8_t address) {
 		return false;
 	}
 
+	modbus.begin(address, *io);
 	modbus.beginTransmission(0x002B);
 	modbus.send((uint16_t)address);
 
@@ -267,6 +272,7 @@ bool RI_D19_80_C::writePassword(uint32_t value) {
 		return false;
 	}
 
+	modbus.begin(address, *io);
 	modbus.beginTransmission(0x002C);
 	modbus.send((uint16_t)(value >> 16));
 	modbus.send((uint16_t)value);
