@@ -61,4 +61,6 @@ constexpr unsigned int INTER_FRAME_BITS = INTER_FRAME_CHARS * CHAR_BITS;
 constexpr unsigned int MS_PER_S = 1000;
 constexpr unsigned long INTER_FRAME_MILLIS = (INTER_FRAME_BITS * MS_PER_S / INPUT_BAUD_RATE) + 1;
 
+bool resetMeter(uint32_t password);
+
 #endif

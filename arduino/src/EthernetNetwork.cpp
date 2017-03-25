@@ -37,6 +37,7 @@ EthernetNetwork::EthernetNetwork() {
 	webServer.on("/", webServerRootPage);
 	webServer.on("/config", webServerConfigPage);
 	webServer.on("/save", webServerSavePage);
+	webServer.on("/reset", webServerResetPage);
 	webServer.begin();
 #endif
 }
@@ -219,5 +220,35 @@ void EthernetNetwork::webServerSavePage() {
 	if (ethernetNetwork.mode == Mode::RUNNING) {
 		ethernetNetwork.configureNetwork();
 	}
+}
+
+void EthernetNetwork::webServerResetPage() {
+	constexpr ESP8266WebServer &server = ethernetNetwork.webServer;
+
+	for (int i = 0; i < server.args(); i++) {
+		if (server.argName(i) == "password") {
+			String page = "<!DOCTYPE html>"
+				"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
+				"<body><p>Meter reset ";
+
+			if (resetMeter((uint32_t)server.arg(i).toInt())) {
+				page += "successful";
+			} else {
+				page += "failed";
+			}
+
+			page += "</p></body></html>";
+			ethernetNetwork.webServer.send(200, "text/html", page);
+			return;
+		}
+	}
+
+	String page = "<!DOCTYPE html>"
+		"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
+		"<body><form method=\"POST\" action=\"/reset\">"
+		"Password: <input type=\"number\" name=\"password\" min=\"0\" max=\"4294967295\"><br>"
+		"<input type=\"submit\"></form></body></html>";
+
+	ethernetNetwork.webServer.send(200, "text/html", page);
 }
 #endif

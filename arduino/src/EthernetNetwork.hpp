@@ -73,6 +73,7 @@ private:
 	static void webServerRootPage();
 	static void webServerConfigPage();
 	static void webServerSavePage();
+	static void webServerResetPage();
 
 	ESP8266WebServer webServer{80};
 #endif
