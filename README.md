@@ -31,5 +31,7 @@ To configure the WiFi SSID and passphrase, connect GPIO14 to GND and the device 
 
 # Sample Output
 ```yaml
-meter: {model: "RI-D19-80-C",serialNumber: "############",reading: {voltage: 2471e-1,current: 3e-1,frequency: 500e-1,activePower: 81,reactivePower: 28,apparentPower: 90,powerFactor: 1000e-1,temperature: 31,activeEnergy: 88e-2}}
+meter: {model: "RI-D19-80-C",serialNumber: "############",reading: {voltage: 2471.0e-1,current: 3.0e-1,frequency: 500.0e-1,activePower: 81.0,reactivePower: 28.0,apparentPower: 90.0,powerFactor: 1000.0e-1,temperature: 31.0,activeEnergy: 88.0e-2}}
 ```
+
+`2017-03-11 13:57:53   INFO  serialNumber=############, voltage=247.1 V, current=0.3 A, frequency=50.0 Hz, activePower=81 W, reactivePower=28 var, apparentPower=90 VA, powerFactor=100.0 %, temperature=31 °C, activeEnergy=000000.88 kW·h`
