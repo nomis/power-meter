@@ -48,7 +48,7 @@ protected:
 	void sendPacket();
 
 	// Elementary charge is about 1.60217×10⁻¹⁹ coulombs
-	static constexpr uint32_t ADDRESS = 0xEFC0A0D9; // 239.192.160.217
+	static constexpr uint8_t ADDRESS[] = { 239, 192, 160, 217 };
 	static constexpr uint16_t PORT = 16021;
 	static constexpr int TTL = 1;
 

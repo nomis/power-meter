@@ -64,10 +64,18 @@ void EthernetNetwork::sendPacket() {
 	if (bufferLength > 0) {
 #ifdef ARDUINO_ARCH_ESP8266
 		WiFiUDP udp;
+		int ret;
 
-		udp.beginPacketMulticast(IPAddress(ADDRESS), PORT, WiFi.localIP(), TTL);
-		udp.write(buffer, bufferLength);
-		udp.endPacket();
+		ret = udp.beginPacketMulticast(
+			IPAddress(ADDRESS[0], ADDRESS[1], ADDRESS[2], ADDRESS[3]),
+			PORT, WiFi.localIP(), TTL);
+		if (ret == 1) {
+			size_t len = udp.write(buffer, bufferLength);
+
+			if (len == bufferLength) {
+				ret = udp.endPacket();
+			}
+		}
 #endif
 	}
 
