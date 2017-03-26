@@ -21,6 +21,7 @@
 #include "Main.hpp"
 #include "Settings.hpp"
 #include "EthernetNetwork.hpp"
+#include "NTPClient.hpp"
 #include "RI_D19_80_C.hpp"
 
 ModbusMaster modbus;
@@ -97,6 +98,7 @@ void setup() {
 #endif
 
 	Settings::init();
+	ntp_init();
 }
 
 void loop() {
@@ -112,10 +114,14 @@ void loop() {
 			}
 			indicateStatus(true);
 
-			constexpr long wait = 1000;
-			unsigned long duration = millis() - start;
-			if (duration < wait) {
-				delay(wait - duration);
+			if (ntp_valid()) {
+				delay(1000 - (ntp_millis() % 1000));
+			} else {
+				constexpr unsigned long wait = 1000;
+				unsigned long duration = millis() - start;
+				if (duration < wait) {
+					delay(wait - duration);
+				}
 			}
 		} else {
 			indicateStatus(false);
