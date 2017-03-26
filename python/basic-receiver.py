@@ -34,6 +34,6 @@ if __name__ == "__main__":
 	parser.add_argument("-s", "--source", metavar="IP_ADDRESS", type=str, action="append", help="filter power meter by IP address")
 	args = parser.parse_args()
 
-	logging.basicConfig(level=args.debug, format="%(asctime)s  %(levelname)5s  %(message)s", datefmt="%F %T")
+	logging.basicConfig(level=args.debug, format="%(asctime)s.%(msecs)03d  %(levelname)5s  %(message)s", datefmt="%F %T")
 
 	receive_loop(args.meter, args.source)
