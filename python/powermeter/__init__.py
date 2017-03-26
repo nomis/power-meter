@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+import datetime
 import logging
 import socket
 import struct
@@ -63,30 +64,36 @@ class PowerMeter:
 						yield Reading(serial_number, data["meter"]["reading"])
 
 
-_Reading__fields = [
-	("voltage", "V", ".1f"),
-	("current", "A", ".1f"),
-	("frequency", "Hz", ".1f"),
-	("activePower", "W", ".0f"),
-	("reactivePower", "var", ".0f"),
-	("apparentPower", "VA", ".0f"),
-	("powerFactor", "%", ".1f"),
-	("temperature", "°C", ".0f"),
-	("activeEnergy", "kW·h", "09.2f"),
-	("reactiveEnergy", "kW·h", "09.2f"),
-]
+_Reading__fields = collections.OrderedDict([
+	("voltage", ("V", ".1f")),
+	("current", ("A", ".1f")),
+	("frequency", ("Hz", ".1f")),
+	("activePower", ("W", ".0f")),
+	("reactivePower", ("var", ".0f")),
+	("apparentPower", ("VA", ".0f")),
+	("powerFactor", ("%", ".1f")),
+	("temperature", ("°C", ".0f")),
+	("activeEnergy", ("kW·h", "09.2f")),
+	("reactiveEnergy", ("kW·h", "09.2f")),
+])
 
 class Reading:
 	def __init__(self, serial_number, data):
-		self.serial_number = serial_number
-		self.data = data
+		self.serialNumber = serial_number
+		self._data = data
+		self.ts = datetime.datetime.today()
+
+	def __getattr__(self, key):
+		if key in __fields and key in self._data:
+			return self._data[key]
+		raise AttributeError(key + " not found")
 
 	def __str__(self):
 		fields = collections.OrderedDict()
-		fields["serialNumber"] = self.serial_number
+		fields["serialNumber"] = self.serialNumber
 
-		for (name, unit, fmt) in __fields:
-			if name in self.data:
-				fields[name] = ("{0:" + fmt + "} {1}").format(self.data[name], unit)
+		for (name, (unit, fmt)) in __fields.items():
+			if name in self._data:
+				fields[name] = ("{0:" + fmt + "} {1}").format(self._data[name], unit)
 
 		return ", ".join(["{0}={1}".format(k, v) for (k,v) in fields.items()])
