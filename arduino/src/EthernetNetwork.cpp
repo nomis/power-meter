@@ -152,7 +152,24 @@ void EthernetNetwork::configureNetwork() {
 EthernetNetwork::operator bool() const {
 	if (mode == Mode::RUNNING) {
 #ifdef ARDUINO_ARCH_ESP8266
-		return (WiFi.status() == WL_CONNECTED);
+		static uint8_t lastStatus = 255;
+		uint8_t status = WiFi.status();
+
+		if (status != lastStatus) {
+			output->print("# WiFi status ");
+			output->print(lastStatus);
+			output->print(" -> ");
+			output->print(status);
+			if (status == WL_CONNECTED) {
+				output->print(" (");
+				output->print(WiFi.localIP());
+				output->println(")");
+			} else {
+				output->println();
+			}
+			lastStatus = status;
+		}
+		return (status == WL_CONNECTED);
 #endif
 	}
 	return false;
