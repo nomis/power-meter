@@ -64,16 +64,16 @@ class PowerMeter:
 
 
 _Reading__fields = [
-	("voltage", "V", 1, ".1f"),
-	("current", "A", 1, ".1f"),
-	("frequency", "Hz", 1, ".1f"),
-	("activePower", "W", 1, ".0f"),
-	("reactivePower", "var", 1, ".0f"),
-	("apparentPower", "VA", 1, ".0f"),
-	("powerFactor", "%", 1, ".1f"),
-	("temperature", "°C", 1, ".0f"),
-	("activeEnergy", "kW·h", 1000, "09.2f"),
-	("reactiveEnergy", "kW·h", 1000, "09.2f"),
+	("voltage", "V", ".1f"),
+	("current", "A", ".1f"),
+	("frequency", "Hz", ".1f"),
+	("activePower", "W", ".0f"),
+	("reactivePower", "var", ".0f"),
+	("apparentPower", "VA", ".0f"),
+	("powerFactor", "%", ".1f"),
+	("temperature", "°C", ".0f"),
+	("activeEnergy", "kW·h", "09.2f"),
+	("reactiveEnergy", "kW·h", "09.2f"),
 ]
 
 class Reading:
@@ -85,8 +85,8 @@ class Reading:
 		fields = collections.OrderedDict()
 		fields["serialNumber"] = self.serial_number
 
-		for (name, unit, div, fmt) in __fields:
+		for (name, unit, fmt) in __fields:
 			if name in self.data:
-				fields[name] = ("{0:" + fmt + "} {1}").format(self.data[name] / div, unit)
+				fields[name] = ("{0:" + fmt + "} {1}").format(self.data[name], unit)
 
 		return ", ".join(["{0}={1}".format(k, v) for (k,v) in fields.items()])
