@@ -52,22 +52,34 @@ void Settings::init() {
 	data.length = sizeof(data);
 }
 
-const char* Settings::readWiFiSSID() {
-	data.wifiSSID[sizeof(data.wifiSSID) - 1] = 0;
-	return data.wifiSSID;
+const char* Settings::readWiFiSSID(unsigned int id) {
+	if (id >= MAX_WIFI_NETWORKS) {
+		return "";
+	}
+
+	data.wifi[id].wifiSSID[sizeof(data.wifi[id].wifiSSID) - 1] = 0;
+	return data.wifi[id].wifiSSID;
 }
 
-void Settings::writeWiFiSSID(const String &value) {
-	value.toCharArray(data.wifiSSID, sizeof(data.wifiSSID));
+void Settings::writeWiFiSSID(unsigned int id, const String &value) {
+	if (id < MAX_WIFI_NETWORKS) {
+		value.toCharArray(data.wifi[id].wifiSSID, sizeof(data.wifi[id].wifiSSID));
+	}
 }
 
-const char* Settings::readWiFiPassphrase() {
-	data.wifiPassphrase[sizeof(data.wifiPassphrase) - 1] = 0;
-	return data.wifiPassphrase;
+const char* Settings::readWiFiPassphrase(unsigned int id) {
+	if (id >= MAX_WIFI_NETWORKS) {
+		return "";
+	}
+
+	data.wifi[id].wifiPassphrase[sizeof(data.wifi[id].wifiPassphrase) - 1] = 0;
+	return data.wifi[id].wifiPassphrase;
 }
 
-void Settings::writeWiFiPassphrase(const String &value) {
-	value.toCharArray(data.wifiPassphrase, sizeof(data.wifiPassphrase));
+void Settings::writeWiFiPassphrase(unsigned int id, const String &value) {
+	if (id < MAX_WIFI_NETWORKS) {
+		value.toCharArray(data.wifi[id].wifiPassphrase, sizeof(data.wifi[id].wifiPassphrase));
+	}
 }
 
 void Settings::commit() {

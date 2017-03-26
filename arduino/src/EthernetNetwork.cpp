@@ -151,8 +151,45 @@ void EthernetNetwork::configureNetwork() {
 
 		output->println("# Connecting WiFi STA");
 		WiFi.mode(WIFI_STA);
-		WiFi.begin(Settings::readWiFiSSID(), Settings::readWiFiPassphrase());
-		staEnabled = true;
+
+		unsigned int n = WiFi.scanNetworks();
+		output->print("# WiFi scan found ");
+		output->print(n);
+		output->println(" networks");
+
+		for (unsigned int i = 0; i < n; i++) {
+			bool found = false;
+
+			for (unsigned int j = 0; j < Settings::MAX_WIFI_NETWORKS; j++) {
+				if (WiFi.SSID(i) == Settings::readWiFiSSID(j)) {
+					found = true;
+
+					output->print("# Found known network ");
+					output->print(WiFi.SSID(i));
+					output->print(" (");
+					output->print(WiFi.RSSI(i));
+					output->println(")");
+
+					if (!staEnabled) {
+						output->print("# Connecting to network ");
+						output->println(WiFi.SSID(i));
+
+						WiFi.begin(Settings::readWiFiSSID(j), Settings::readWiFiPassphrase(j));
+						staEnabled = true;
+					}
+
+					break;
+				}
+			}
+
+			if (!found) {
+				output->print("# Unknown network ");
+				output->print(WiFi.SSID(i));
+				output->print(" (");
+				output->print(WiFi.RSSI(i));
+				output->println(")");
+			}
+		}
 	}
 #endif
 }
@@ -216,10 +253,28 @@ void EthernetNetwork::webServerRootPage() {
 void EthernetNetwork::webServerConfigPage() {
 	String page = "<!DOCTYPE html>"
 		"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
-		"<body><form method=\"POST\" action=\"/save\">"
-		"SSID: <input type=\"text\" name=\"ssid\" value=\"*\"><br>"
-		"Passphrase: <input type=\"text\" name=\"passphrase\" value=\"*\"><br>"
-		"<input type=\"submit\"></form></body></html>";
+		"<body><form method=\"POST\" action=\"/save\">";
+
+	for (unsigned int id = 0; id < Settings::MAX_WIFI_NETWORKS; id++) {
+		page += "SSID ";
+		page += id;
+		page += ": <input type=\"text\" name=\"ssid_";
+		page += id;
+		page += "\" value=\"";
+		page += Settings::readWiFiSSID(id);
+		page += "\"><br>";
+		page += "Passphrase ";
+		page += id;
+		page += ": <input type=\"text\" name=\"passphrase_";
+		page += id;
+		page += "\" value=\"";
+		if (strlen(Settings::readWiFiSSID(id)) > 0) {
+			page += "*";
+		}
+		page += "\"><br>";
+	}
+
+	page += "<input type=\"submit\"></form></body></html>";
 
 	ethernetNetwork.webServer.send(200, "text/html", page);
 }
@@ -231,20 +286,29 @@ void EthernetNetwork::webServerSavePage() {
 		"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
 		"<body><p>Settings updated</p></body></html>";
 
-	for (int i = 0; i < server.args(); i++) {
-		if (server.argName(i) == "ssid" && server.arg(i) != "*") {
-			Settings::writeWiFiSSID(server.arg(i));
-		} else if (server.argName(i) == "passphrase" && server.arg(i) != "*") {
-			Settings::writeWiFiPassphrase(server.arg(i));
+	for (unsigned int id = 0; id < Settings::MAX_WIFI_NETWORKS; id++) {
+		String argName;
+		String argValue;
+
+ 		argName = "ssid_";
+		argName += id;
+		argValue = server.arg(argName);
+		Settings::writeWiFiSSID(id, argValue);
+
+		if (argValue == "") {
+			Settings::writeWiFiPassphrase(id, "");
+		} else {
+			argName = "passphrase_";
+			argName += id;
+			argValue = server.arg(argName);
+			if (argValue != "*") {
+				Settings::writeWiFiPassphrase(id, argValue);
+			}
 		}
 	}
 	Settings::commit();
 
 	server.send(200, "text/html", page);
-
-	if (ethernetNetwork.mode == Mode::RUNNING) {
-		ethernetNetwork.configureNetwork();
-	}
 }
 
 void EthernetNetwork::webServerResetPage() {

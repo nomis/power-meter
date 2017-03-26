@@ -26,23 +26,28 @@ public:
 	Settings() = delete;
 	virtual ~Settings() = delete;
 	static void init();
-	static const char* readWiFiSSID();
-	static void writeWiFiSSID(const String &value);
-	static const char* readWiFiPassphrase();
-	static void writeWiFiPassphrase(const String &value);
+	static const char* readWiFiSSID(unsigned int id);
+	static void writeWiFiSSID(unsigned int id, const String &value);
+	static const char* readWiFiPassphrase(unsigned int id);
+	static void writeWiFiPassphrase(unsigned int id, const String &value);
 	static void commit();
 
+	static constexpr unsigned int MAX_WIFI_NETWORKS = 10;
 	static constexpr unsigned int IEEE80211_MAX_SSID_LEN = 32;
 	static constexpr unsigned int WPA2_PSK_MAX_PASSPHRASE_LEN = 63;
 
 protected:
 	static constexpr uint32_t EEPROM_MAGIC = 0x16021766;
 
+	struct WiFiData {
+		char wifiSSID[IEEE80211_MAX_SSID_LEN + 1];
+		char wifiPassphrase[WPA2_PSK_MAX_PASSPHRASE_LEN + 1];
+	} __attribute__((packed));
+
 	struct Data {
 		uint32_t magic;
 		uint16_t length;
-		char wifiSSID[IEEE80211_MAX_SSID_LEN + 1];
-		char wifiPassphrase[WPA2_PSK_MAX_PASSPHRASE_LEN + 1];
+		WiFiData wifi[MAX_WIFI_NETWORKS];
 	} __attribute__((packed));
 
 	static Data data;
