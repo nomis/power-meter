@@ -69,6 +69,8 @@ size_t Decimal::printTo(Print &p) const {
 		n += p.print(coefficient);
 	}
 
+	n += p.print(".0");
+
 	if (exponent) {
 		n += p.print('e');
 		n += p.print(exponent);

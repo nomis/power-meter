@@ -38,7 +38,7 @@ public:
 private:
 	bool set;
 	uint32_t coefficient;
-	bool coefficientSigned; ///< To be able to store both uint32_t and avoid using int64_t
+	bool coefficientSigned; ///< To be able to store both uint32_t without using int64_t
 	int8_t exponent;
 };
 
