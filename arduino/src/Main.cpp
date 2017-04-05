@@ -117,7 +117,7 @@ void loop() {
 			if (ntp_valid()) {
 				delay(1000 - (ntp_millis() % 1000));
 			} else {
-				constexpr unsigned long wait = 1000;
+				constexpr unsigned long wait = 500;
 				unsigned long duration = millis() - start;
 				if (duration < wait) {
 					delay(wait - duration);
