@@ -20,7 +20,9 @@
 #define POWER_METER_SETTINGS_HPP
 
 #include <Arduino.h>
+#include "Main.hpp"
 
+#ifdef POWER_METER_HAS_NETWORK
 class Settings {
 public:
 	Settings() = delete;
@@ -52,5 +54,6 @@ protected:
 
 	static Data data;
 };
+#endif
 
 #endif

@@ -22,6 +22,10 @@
 #include <stdint.h>
 #include <Arduino.h>
 
+#ifdef ARDUINO_ARCH_ESP8266
+# define POWER_METER_HAS_NETWORK
+#endif
+
 // Output
 #ifdef ARDUINO_AVR_MICRO
 constexpr int LED_PIN = 13;

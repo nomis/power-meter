@@ -30,6 +30,7 @@ extern "C" {
 }
 #endif
 
+#ifdef POWER_METER_HAS_NETWORK
 EthernetNetwork ethernetNetwork;
 
 EthernetNetwork::EthernetNetwork() {
@@ -340,4 +341,6 @@ void EthernetNetwork::webServerResetPage() {
 
 	ethernetNetwork.webServer.send(200, "text/html", page);
 }
+#endif
+
 #endif

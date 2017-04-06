@@ -20,6 +20,7 @@
 #define POWER_METER_ETHERNETNETWORK_HPP
 
 #include <Arduino.h>
+#include "Main.hpp"
 
 #ifdef ARDUINO_ARCH_ESP8266
 # pragma GCC diagnostic push
@@ -28,6 +29,7 @@
 # pragma GCC diagnostic pop
 #endif
 
+#ifdef POWER_METER_HAS_NETWORK
 class EthernetNetwork: public Print {
 public:
 	EthernetNetwork();
@@ -55,14 +57,10 @@ protected:
 	static constexpr const char *HOSTNAME = "ESP8266-PowerMeter-%08x";
 	static constexpr const char *SSID = "🔌 %08x";
 
-#ifdef ARDUINO_AVR_MICRO
-	static constexpr size_t MAX_LENGTH = 1;
-#else
 	static constexpr size_t ETH_DATA_LEN = 1500;
 	static constexpr size_t IPV4_HLEN = 20;
 	static constexpr size_t UDP_HLEN = 8;
 	static constexpr size_t MAX_LENGTH = ETH_DATA_LEN - IPV4_HLEN - UDP_HLEN;
-#endif
 
 	Mode mode = Mode::DISABLED;
 	char buffer[MAX_LENGTH];
@@ -80,5 +78,6 @@ private:
 };
 
 extern EthernetNetwork ethernetNetwork;
+#endif
 
 #endif

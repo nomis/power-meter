@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Settings.hpp"
+#include "Main.hpp"
+
+#ifdef POWER_METER_HAS_NETWORK
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #include <EEPROM.h>
 #pragma GCC diagnostic pop
-
-#include "Settings.hpp"
-#include "Main.hpp"
 
 Settings::Data Settings::data;
 
@@ -89,3 +90,5 @@ void Settings::commit() {
 	EEPROM.commit();
 #endif
 }
+
+#endif

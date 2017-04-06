@@ -89,29 +89,31 @@ void setup() {
 	input->begin(INPUT_BAUD_RATE);
 	output->begin(OUTPUT_BAUD_RATE);
 
-#ifdef ARDUINO_AVR_MICRO
-	while (!*output);
-#endif
-
 #ifdef ARDUINO_ESP8266_ESP12
 	output->println();
 #endif
 
+#ifdef POWER_METER_HAS_NETWORK
 	Settings::init();
+#endif
 	ntp_init();
 }
 
 void loop() {
 	unsigned long start = millis();
 
+#ifdef POWER_METER_HAS_NETWORK
 	ethernetNetwork.loop();
+#endif
 
 	if (*output) {
 		if (meter.read()) {
 			output->println(meter);
+#ifdef POWER_METER_HAS_NETWORK
 			if (ethernetNetwork) {
 				ethernetNetwork.println(meter);
 			}
+#endif
 			indicateStatus(true);
 
 			if (ntp_valid()) {
@@ -132,7 +134,9 @@ void loop() {
 	}
 
 	if (CONFIGURE_PIN >= 0) {
+#ifdef POWER_METER_HAS_NETWORK
 		ethernetNetwork.setConfigurationMode(digitalRead(CONFIGURE_PIN) == LOW);
+#endif
 	}
 }
 
