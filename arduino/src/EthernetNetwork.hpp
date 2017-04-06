@@ -71,14 +71,14 @@ protected:
 	size_t bufferLength = 0;
 
 private:
-	static constexpr const char *NTP_SERVER = "pool.ntp.org";
+	static constexpr const char *NTP_DEFAULT_HOSTNAME = "pool.ntp.org";
 	static constexpr uint16_t NTP_PORT = 123;
 	static constexpr unsigned long NTP_VALID_INTERVAL = 10;
-	static constexpr unsigned long NTP_START_INTERVAL = 7;
+	static constexpr unsigned long NTP_START_INTERVAL = 6;
 	static constexpr unsigned long NTP_TIMEOUT = 2000;
 
+	const char *ntpHostname = "";
 	WiFiUDP ntpSocket;
-	bool ntpStart = false;
 	bool ntpValid = false;
 
 #ifdef ARDUINO_ARCH_ESP8266

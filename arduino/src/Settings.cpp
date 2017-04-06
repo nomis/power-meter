@@ -54,32 +54,47 @@ void Settings::init() {
 }
 
 const char* Settings::readWiFiSSID(unsigned int id) {
-	if (id >= MAX_WIFI_NETWORKS) {
+	if (id >= MAX_NETWORKS) {
 		return "";
 	}
 
-	data.wifi[id].wifiSSID[sizeof(data.wifi[id].wifiSSID) - 1] = 0;
-	return data.wifi[id].wifiSSID;
+	data.networks[id].content.wifiSSID[sizeof(data.networks[id].content.wifiSSID) - 1] = 0;
+	return data.networks[id].content.wifiSSID;
 }
 
 void Settings::writeWiFiSSID(unsigned int id, const String &value) {
-	if (id < MAX_WIFI_NETWORKS) {
-		value.toCharArray(data.wifi[id].wifiSSID, sizeof(data.wifi[id].wifiSSID));
+	if (id < MAX_NETWORKS) {
+		value.toCharArray(data.networks[id].content.wifiSSID, sizeof(data.networks[id].content.wifiSSID));
 	}
 }
 
 const char* Settings::readWiFiPassphrase(unsigned int id) {
-	if (id >= MAX_WIFI_NETWORKS) {
+	if (id >= MAX_NETWORKS) {
 		return "";
 	}
 
-	data.wifi[id].wifiPassphrase[sizeof(data.wifi[id].wifiPassphrase) - 1] = 0;
-	return data.wifi[id].wifiPassphrase;
+	data.networks[id].content.wifiPassphrase[sizeof(data.networks[id].content.wifiPassphrase) - 1] = 0;
+	return data.networks[id].content.wifiPassphrase;
 }
 
 void Settings::writeWiFiPassphrase(unsigned int id, const String &value) {
-	if (id < MAX_WIFI_NETWORKS) {
-		value.toCharArray(data.wifi[id].wifiPassphrase, sizeof(data.wifi[id].wifiPassphrase));
+	if (id < MAX_NETWORKS) {
+		value.toCharArray(data.networks[id].content.wifiPassphrase, sizeof(data.networks[id].content.wifiPassphrase));
+	}
+}
+
+const char* Settings::readNTPHostname(unsigned int id) {
+	if (id >= MAX_NETWORKS) {
+		return "";
+	}
+
+	data.networks[id].content.ntpHostname[sizeof(data.networks[id].content.ntpHostname) - 1] = 0;
+	return data.networks[id].content.ntpHostname;
+}
+
+void Settings::writeNTPHostname(unsigned int id, const String &value) {
+	if (id < MAX_NETWORKS) {
+		value.toCharArray(data.networks[id].content.ntpHostname, sizeof(data.networks[id].content.ntpHostname));
 	}
 }
 

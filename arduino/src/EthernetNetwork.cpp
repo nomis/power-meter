@@ -171,7 +171,7 @@ void EthernetNetwork::configureNetwork() {
 		for (unsigned int i = 0; i < n; i++) {
 			bool found = false;
 
-			for (unsigned int j = 0; j < Settings::MAX_WIFI_NETWORKS; j++) {
+			for (unsigned int j = 0; j < Settings::MAX_NETWORKS; j++) {
 				if (WiFi.SSID(i) == Settings::readWiFiSSID(j)) {
 					found = true;
 
@@ -184,6 +184,8 @@ void EthernetNetwork::configureNetwork() {
 					if (!staEnabled) {
 						output->print("# Connecting to network ");
 						output->println(WiFi.SSID(i));
+
+						ntpHostname = Settings::readNTPHostname(j);
 
 						WiFi.begin(Settings::readWiFiSSID(j), Settings::readWiFiPassphrase(j));
 						staEnabled = true;
@@ -268,7 +270,7 @@ void EthernetNetwork::webServerConfigPage() {
 		"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
 		"<body><form method=\"POST\" action=\"/save\">";
 
-	for (unsigned int id = 0; id < Settings::MAX_WIFI_NETWORKS; id++) {
+	for (unsigned int id = 0; id < Settings::MAX_NETWORKS; id++) {
 		page += "SSID ";
 		page += id;
 		page += ": <input type=\"text\" name=\"ssid_";
@@ -285,9 +287,16 @@ void EthernetNetwork::webServerConfigPage() {
 			page += "*";
 		}
 		page += "\"><br>";
+		page += "NTP Hostname ";
+		page += id;
+		page += ": <input type=\"text\" name=\"ntphostname_";
+		page += id;
+		page += "\" value=\"";
+		page += Settings::readNTPHostname(id);
+		page += "\"><hr>";
 	}
 
-	page += "<input type=\"submit\"></form></body></html>";
+	page += "<input type=\"submit\" value=\"Save\"></form></body></html>";
 
 	ethernetNetwork.webServer.send(200, "text/html", page);
 }
@@ -299,7 +308,7 @@ void EthernetNetwork::webServerSavePage() {
 		"<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>"
 		"<body><p>Settings updated</p></body></html>";
 
-	for (unsigned int id = 0; id < Settings::MAX_WIFI_NETWORKS; id++) {
+	for (unsigned int id = 0; id < Settings::MAX_NETWORKS; id++) {
 		String argName;
 		String argValue;
 
@@ -310,6 +319,7 @@ void EthernetNetwork::webServerSavePage() {
 
 		if (argValue == "") {
 			Settings::writeWiFiPassphrase(id, "");
+			Settings::writeNTPHostname(id, "");
 		} else {
 			argName = "passphrase_";
 			argName += id;
@@ -317,6 +327,11 @@ void EthernetNetwork::webServerSavePage() {
 			if (argValue != "*") {
 				Settings::writeWiFiPassphrase(id, argValue);
 			}
+
+			argName = "ntphostname_";
+			argName += id;
+			argValue = server.arg(argName);
+			Settings::writeNTPHostname(id, argValue);
 		}
 	}
 	Settings::commit();
@@ -366,13 +381,19 @@ unsigned long EthernetNetwork::ntpMillis() {
 	static constexpr int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
 	static unsigned long lastQuery;
 	static unsigned long offset = 0;
+	static bool ntpStart = false;
 	unsigned long interval = ntpValid ? NTP_VALID_INTERVAL : NTP_START_INTERVAL;
 
 	if (!ntpStart || millis() - lastQuery >= (1000UL << interval)) {
 		if (WiFi.status() == WL_CONNECTED) {
+			const char *serverName = ntpHostname;
 			IPAddress serverAddress;
 
-			if (WiFi.hostByName(NTP_SERVER, serverAddress)) {
+			if (strlen(ntpHostname) == 0) {
+				ntpHostname = NTP_DEFAULT_HOSTNAME;
+			}
+
+			if (WiFi.hostByName(serverName, serverAddress)) {
 				uint8_t packetBuffer[NTP_PACKET_SIZE];
 
 				memset(packetBuffer, 0, NTP_PACKET_SIZE);
@@ -394,7 +415,6 @@ unsigned long EthernetNetwork::ntpMillis() {
 				ntpSocket.endPacket();
 
 				lastQuery = millis();
-				ntpStart = true;
 
 				while (millis() - lastQuery <= NTP_TIMEOUT) {
 					if (ntpSocket.parsePacket()) {
@@ -417,6 +437,8 @@ unsigned long EthernetNetwork::ntpMillis() {
 			} else {
 				lastQuery = millis();
 			}
+
+			ntpStart = true;
 		}
 	}
 
