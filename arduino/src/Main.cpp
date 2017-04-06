@@ -21,7 +21,6 @@
 #include "Main.hpp"
 #include "Settings.hpp"
 #include "EthernetNetwork.hpp"
-#include "NTPClient.hpp"
 #include "RI_D19_80_C.hpp"
 
 ModbusMaster modbus;
@@ -96,7 +95,6 @@ void setup() {
 #ifdef POWER_METER_HAS_NETWORK
 	Settings::init();
 #endif
-	ntp_init();
 }
 
 void loop() {
@@ -116,15 +114,19 @@ void loop() {
 #endif
 			indicateStatus(true);
 
-			if (ntp_valid()) {
-				delay(1000 - (ntp_millis() % 1000));
+#ifdef POWER_METER_HAS_NETWORK
+			if (ethernetNetwork.isTimeValid()) {
+				delay(1000 - (ethernetNetwork.ntpMillis() % 1000));
 			} else {
+#endif
 				constexpr unsigned long wait = 500;
 				unsigned long duration = millis() - start;
 				if (duration < wait) {
 					delay(wait - duration);
 				}
+#ifdef POWER_METER_HAS_NETWORK
 			}
+#endif
 		} else {
 			indicateStatus(false);
 			delay(100);

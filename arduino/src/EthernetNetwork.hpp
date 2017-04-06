@@ -30,6 +30,8 @@
 #endif
 
 #ifdef POWER_METER_HAS_NETWORK
+#include <WiFiUdp.h>
+
 class EthernetNetwork: public Print {
 public:
 	EthernetNetwork();
@@ -38,6 +40,8 @@ public:
 	void loop();
 	void setConfigurationMode(bool configure);
 	operator bool() const;
+	bool isTimeValid();
+	unsigned long ntpMillis();
 
 protected:
 	enum class Mode {
@@ -67,6 +71,16 @@ protected:
 	size_t bufferLength = 0;
 
 private:
+	static constexpr const char *NTP_SERVER = "pool.ntp.org";
+	static constexpr uint16_t NTP_PORT = 123;
+	static constexpr unsigned long NTP_VALID_INTERVAL = 10;
+	static constexpr unsigned long NTP_START_INTERVAL = 7;
+	static constexpr unsigned long NTP_TIMEOUT = 2000;
+
+	WiFiUDP ntpSocket;
+	bool ntpStart = false;
+	bool ntpValid = false;
+
 #ifdef ARDUINO_ARCH_ESP8266
 	static void webServerRootPage();
 	static void webServerConfigPage();

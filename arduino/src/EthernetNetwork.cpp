@@ -14,6 +14,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NTP client code (was public domain):
+ *   created 4 Sep 2010
+ *   by Michael Margolis
+ *   modified 9 Apr 2012
+ *   by Tom Igoe
+ *   updated for the ESP8266 12 Apr 2015
+ *   by Ivan Grokhotkov
  */
 
 #include "Main.hpp"
@@ -34,6 +42,8 @@ extern "C" {
 EthernetNetwork ethernetNetwork;
 
 EthernetNetwork::EthernetNetwork() {
+	ntpSocket.begin(NTP_PORT);
+
 #ifdef ARDUINO_ARCH_ESP8266
 	webServer.on("/", webServerRootPage);
 	webServer.on("/config", webServerConfigPage);
@@ -222,6 +232,8 @@ EthernetNetwork::operator bool() const {
 }
 
 void EthernetNetwork::loop() {
+	ntpMillis();
+
 #ifdef ARDUINO_ARCH_ESP8266
 	webServer.handleClient();
 #endif
@@ -342,5 +354,73 @@ void EthernetNetwork::webServerResetPage() {
 	ethernetNetwork.webServer.send(200, "text/html", page);
 }
 #endif
+
+bool EthernetNetwork::isTimeValid() {
+	if (!ntpValid) {
+		ntpMillis();
+	}
+	return ntpValid;
+}
+
+unsigned long EthernetNetwork::ntpMillis() {
+	static constexpr int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+	static unsigned long lastQuery;
+	static unsigned long offset = 0;
+	unsigned long interval = ntpValid ? NTP_VALID_INTERVAL : NTP_START_INTERVAL;
+
+	if (!ntpStart || millis() - lastQuery >= (1000UL << interval)) {
+		if (WiFi.status() == WL_CONNECTED) {
+			IPAddress serverAddress;
+
+			if (WiFi.hostByName(NTP_SERVER, serverAddress)) {
+				uint8_t packetBuffer[NTP_PACKET_SIZE];
+
+				memset(packetBuffer, 0, NTP_PACKET_SIZE);
+
+				// Initialize values needed to form NTP request
+				// https://en.wikipedia.org/wiki/Network_Time_Protocol
+				packetBuffer[0] = 0b11100011;         // LI, Version, Mode
+				packetBuffer[1] = 0;                  // Stratum, or type of clock
+				packetBuffer[2] = NTP_VALID_INTERVAL; // Polling Interval
+				packetBuffer[3] = 0xEC;               // Peer Clock Precision
+				// 8 bytes of zero for Root Delay & Root Dispersion
+				packetBuffer[12] = 49;
+				packetBuffer[13] = 0x4E;
+				packetBuffer[14] = 49;
+				packetBuffer[15] = 52;
+
+				ntpSocket.beginPacket(serverAddress, NTP_PORT);
+				ntpSocket.write(packetBuffer, NTP_PACKET_SIZE);
+				ntpSocket.endPacket();
+
+				lastQuery = millis();
+				ntpStart = true;
+
+				while (millis() - lastQuery <= NTP_TIMEOUT) {
+					if (ntpSocket.parsePacket()) {
+						memset(packetBuffer, 0, NTP_PACKET_SIZE);
+						if (ntpSocket.read(packetBuffer, NTP_PACKET_SIZE) == NTP_PACKET_SIZE) {
+							unsigned long now = millis();
+							uint32_t fraction = word(packetBuffer[44], packetBuffer[45]) << 16 | word(packetBuffer[46], packetBuffer[47]);
+
+							fraction /= 4294967;
+							fraction += (now - lastQuery) / 2;
+							fraction %= 1000;
+							offset = fraction - now;
+
+							ntpValid = true;
+						}
+						break;
+					}
+					yield();
+				}
+			} else {
+				lastQuery = millis();
+			}
+		}
+	}
+
+	return millis() + offset;
+}
 
 #endif
