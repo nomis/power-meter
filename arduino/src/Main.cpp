@@ -100,21 +100,17 @@ void setup() {
 void loop() {
 	unsigned long start = millis();
 
-#ifdef POWER_METER_HAS_NETWORK
-	ethernetNetwork.loop();
-#endif
-
 	if (*output) {
 		if (meter.read()) {
 			output->println(meter);
+			indicateStatus(true);
 #ifdef POWER_METER_HAS_NETWORK
 			if (ethernetNetwork) {
 				ethernetNetwork.println(meter);
 			}
-#endif
-			indicateStatus(true);
 
-#ifdef POWER_METER_HAS_NETWORK
+			ethernetNetwork.loop();
+
 			if (ethernetNetwork.isTimeValid()) {
 				delay(1000 - (ethernetNetwork.ntpMillis() % 1000));
 			} else {
@@ -133,6 +129,10 @@ void loop() {
 		}
 	} else {
 		indicateStatus(false);
+
+#ifdef POWER_METER_HAS_NETWORK
+		ethernetNetwork.loop();
+#endif
 	}
 
 	if (CONFIGURE_PIN >= 0) {
