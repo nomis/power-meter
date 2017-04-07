@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import collections
-import datetime
+from collections import OrderedDict
+from datetime import datetime, timedelta
 import logging
 import socket
 import struct
 import yaml
+
 
 IP4_GROUP = "239.192.160.217"
 PORT = 16021
@@ -29,8 +30,8 @@ IPV4_HLEN = 20;
 UDP_HLEN = 8;
 MAX_LENGTH = ETH_DATA_LEN - IPV4_HLEN - UDP_HLEN
 
-_PowerMeter__log = logging.getLogger("powermeter")
 
+_PowerMeter__log = logging.getLogger("powermeter")
 
 class PowerMeter:
 	def __init__(self, serial_numbers=None, ip4_sources=None):
@@ -64,7 +65,7 @@ class PowerMeter:
 						yield Reading(serial_number, data["meter"]["reading"])
 
 
-_Reading__fields = collections.OrderedDict([
+_Reading__fields = OrderedDict([
 	("voltage", ("V", ".1f")),
 	("current", ("A", ".1f")),
 	("frequency", ("Hz", ".1f")),
@@ -81,15 +82,24 @@ class Reading:
 	def __init__(self, serial_number, data):
 		self.serialNumber = serial_number
 		self._data = data
-		self.ts = datetime.datetime.today()
+		self.ts = datetime.today()
 
 	def __getattr__(self, key):
-		if key in __fields and key in self._data:
-			return self._data[key]
+		if key in __fields:
+			if key in self._data:
+				return self._data[key]
+			return None
+		raise AttributeError(key + " not found")
+
+	def __getitem__(self, key):
+		if key in __fields:
+			if key in self._data:
+				return self._data[key]
+			return None
 		raise AttributeError(key + " not found")
 
 	def __str__(self):
-		fields = collections.OrderedDict()
+		fields = OrderedDict()
 		fields["serialNumber"] = self.serialNumber
 
 		for (name, (unit, fmt)) in __fields.items():
@@ -97,3 +107,44 @@ class Reading:
 				fields[name] = ("{0:" + fmt + "} {1}").format(self._data[name], unit)
 
 		return ", ".join(["{0}={1}".format(k, v) for (k,v) in fields.items()])
+
+
+try:
+	import numpy as np
+
+
+	_PowerMeterNumPy__fields = _Reading__fields
+	_PowerMeterNumPy__dtype = [("ts", "datetime64[us]")] + [(name, "float64") for name in _PowerMeterNumPy__fields.keys()]
+
+	class PowerMeterNumPy(PowerMeter):
+		def __init__(self, serial_numbers=None, ip4_sources=None, history=timedelta(seconds=60)):
+			super().__init__(serial_numbers, ip4_sources)
+
+			self.history = history
+
+		@property
+		def readings(self):
+			data = None
+			last = None
+
+			while True:
+				reading = next(super().readings)
+				now = reading.ts.replace(microsecond=0)
+				if now == last:
+					continue
+				last = now
+
+				np_now = np.datetime64(now)
+				np_reading = tuple([np_now] + [reading[name] for name in __fields])
+				np_data = np.array([np_reading], dtype=__dtype)
+				if data is not None:
+					data = np.concatenate((data, np_data))
+				else:
+					data = np_data
+
+				while data[["ts"]][0][0] < now - self.history:
+					data = np.delete(data, 0, 0)
+
+				yield np.rec.array(data)
+except ImportError:
+	pass
