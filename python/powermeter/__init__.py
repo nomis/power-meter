@@ -34,7 +34,7 @@ MAX_LENGTH = ETH_DATA_LEN - IPV4_HLEN - UDP_HLEN
 _PowerMeter__log = logging.getLogger("powermeter")
 
 class PowerMeter:
-	def __init__(self, serial_numbers=None, ip4_sources=None):
+	def __init__(self, serial_numbers=None, ip4_sources=None, always_yield=False):
 		self.serial_numbers = serial_numbers
 		self.ip4_sources = ip4_sources
 
@@ -46,23 +46,29 @@ class PowerMeter:
 		mreq = socket.inet_pton(ai[0], ai[4][0]) + struct.pack('=I', socket.INADDR_ANY)
 		self.s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
+		if always_yield:
+			self.s.setblocking(False)
+
 	@property
 	def readings(self):
 		while True:
-			(data, sender) = self.s.recvfrom(MAX_LENGTH)
-			__log.debug(": ".join((sender[0], data.decode("utf-8", "replace"))))
-
 			try:
-				data = yaml.safe_load(data)
-			except yaml.YAMLError as e:
-				continue
+				(data, sender) = self.s.recvfrom(MAX_LENGTH)
+				__log.debug(": ".join((sender[0], data.decode("utf-8", "replace"))))
 
-			serial_number = data.get("meter", {}).get("serialNumber", None)
-			if not self.ip4_sources or sender[0] in self.ip4_sources:
-				if serial_number and (not self.serial_numbers or serial_number in self.serial_numbers):
-					reading = data.get("meter", {}).get("reading", {})
-					if reading:
-						yield Reading(serial_number, data["meter"]["reading"])
+				try:
+					data = yaml.safe_load(data)
+				except yaml.YAMLError as e:
+					continue
+
+				serial_number = data.get("meter", {}).get("serialNumber", None)
+				if not self.ip4_sources or sender[0] in self.ip4_sources:
+					if serial_number and (not self.serial_numbers or serial_number in self.serial_numbers):
+						reading = data.get("meter", {}).get("reading", {})
+						if reading:
+							yield Reading(serial_number, data["meter"]["reading"])
+			except BlockingIOError:
+				yield None
 
 
 _Reading__fields = OrderedDict([
@@ -114,11 +120,12 @@ try:
 
 
 	_PowerMeterNumPy__fields = _Reading__fields
-	_PowerMeterNumPy__dtype = [("ts", "datetime64[us]")] + [(name, "float64") for name in _PowerMeterNumPy__fields.keys()]
+#	_PowerMeterNumPy__dtype = [("ts", "datetime64[us]")] + [(name, "float64") for name in _PowerMeterNumPy__fields.keys()]
+	_PowerMeterNumPy__dtype = [("ts", "O")] + [(name, "float64") for name in _PowerMeterNumPy__fields.keys()]
 
 	class PowerMeterNumPy(PowerMeter):
-		def __init__(self, serial_numbers=None, ip4_sources=None, history=timedelta(seconds=60)):
-			super().__init__(serial_numbers, ip4_sources)
+		def __init__(self, serial_numbers=None, ip4_sources=None, always_yield=False, history=timedelta(seconds=60)):
+			super().__init__(serial_numbers, ip4_sources, always_yield)
 
 			self.history = history
 
@@ -129,22 +136,25 @@ try:
 
 			while True:
 				reading = next(super().readings)
-				now = reading.ts.replace(microsecond=0)
-				if now == last:
-					continue
-				last = now
+				if reading is not None:
+					now = reading.ts.replace(microsecond=0)
+					if now == last:
+						continue
+					last = now
 
-				np_now = np.datetime64(now)
-				np_reading = tuple([np_now] + [reading[name] for name in __fields])
-				np_data = np.array([np_reading], dtype=__dtype)
-				if data is not None:
+					np_reading = tuple([now] + [reading[name] for name in __fields])
+					np_data = np.array([np_reading], dtype=__dtype)
+					if data is None:
+						data = np.array([tuple([now - timedelta(seconds=i)] + [None for name in __fields]) for i in range(self.history.seconds, 0, -1)], dtype=__dtype)
 					data = np.concatenate((data, np_data))
+
+					while data[["ts"]][0][0] < now - self.history:
+						data = np.delete(data, 0, 0)
+
+				if data is None:
+					yield None
 				else:
-					data = np_data
+					yield np.rec.array(data)
 
-				while data[["ts"]][0][0] < now - self.history:
-					data = np.delete(data, 0, 0)
-
-				yield np.rec.array(data)
 except ImportError:
 	pass
