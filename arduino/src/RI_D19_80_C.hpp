@@ -76,7 +76,7 @@ protected:
 	virtual String model() const;
 
 	static constexpr uint32_t maximumEnergy = 99999999; // daW·h (6+2 record, 5+1 display)
-	static constexpr bool debug = true;
+	static constexpr bool debug = false;
 
 	ModbusMaster &modbus;
 	Stream *io;
