@@ -1,6 +1,9 @@
 debhelper-build-stamp
 files
 tmp/
+power-meter-python3/
+power-meter-python3.debhelper.log
+power-meter-python3.substvars
 power-meter-client/
 power-meter-client.debhelper.log
 power-meter-client.substvars

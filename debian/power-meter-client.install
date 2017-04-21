@@ -1,4 +1,3 @@
-debian/tmp/usr/lib/power-meter/powermeter/__init__.py
 debian/tmp/usr/lib/power-meter/basic-receiver.py
 debian/tmp/usr/lib/power-meter/matplotlib-receiver.py
 debian/tmp/usr/lib/power-meter/numpy-receiver.py
