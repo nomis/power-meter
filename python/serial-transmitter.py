@@ -24,6 +24,7 @@ import os
 import serial
 import socket
 import struct
+import systemd.daemon
 import termios
 import time
 
@@ -51,6 +52,8 @@ def transmit_loop(device, interface):
 				+ struct.pack("!I", socket.INADDR_ANY)
 				+ struct.pack("@i", socket.if_nametoindex(interface)))
 			output.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, mcast_if)
+
+			systemd.daemon.notify("READY=1")
 
 			last = 0
 			while True:
