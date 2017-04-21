@@ -1,0 +1,12 @@
+Source: power-meter
+Section: misc
+Priority: optional
+Maintainer: Simon Arlott <ubuntu@sa.me.uk>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+
+Package: power-meter-client
+Architecture: all
+Depends: ${misc:Depends}, python3 (>= 3.5.1), python3-matplotlib (>= 1.5.1), python3-numpy (>= 1:1.11.0)
+Description: Power Meter client utilities
+ Applications for handling Power Meter output.

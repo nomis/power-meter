@@ -1,0 +1,9 @@
+debhelper-build-stamp
+files
+tmp/
+power-meter-client/
+power-meter-client.debhelper.log
+power-meter-client.substvars
+power-meter-server/
+power-meter-server.debhelper.log
+power-meter-server.substvars
