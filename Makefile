@@ -14,3 +14,4 @@ install: all
 	$(INSTALL) -m 755 -D python/basic-receiver.py $(DESTDIR)$(libdir)/power-meter/basic-receiver.py
 	$(INSTALL) -m 755 -D python/numpy-receiver.py $(DESTDIR)$(libdir)/power-meter/numpy-receiver.py
 	$(INSTALL) -m 755 -D python/matplotlib-receiver.py $(DESTDIR)$(libdir)/power-meter/matplotlib-receiver.py
+	$(INSTALL) -m 755 -D python/serial-transmitter.py $(DESTDIR)$(libdir)/power-meter/serial-transmitter.py

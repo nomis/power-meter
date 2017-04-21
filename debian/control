@@ -16,3 +16,9 @@ Architecture: all
 Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-matplotlib (>= 1.5.1), python3-numpy (>= 1:1.11.0)
 Description: Power Meter client utilities
  Applications for handling Power Meter output.
+
+Package: power-meter-server
+Architecture: all
+Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-systemd (>= 231), python3-serial (>= 3.0.1)
+Description: Power Meter server utilities
+ Applications for handling Power Meter output.
