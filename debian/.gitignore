@@ -4,9 +4,12 @@ tmp/
 power-meter-python3/
 power-meter-python3.debhelper.log
 power-meter-python3.substvars
-power-meter-client/
-power-meter-client.debhelper.log
-power-meter-client.substvars
+power-meter-client-cli/
+power-meter-client-cli.debhelper.log
+power-meter-client-cli.substvars
+power-meter-client-gui/
+power-meter-client-gui.debhelper.log
+power-meter-client-gui.substvars
 power-meter-server/
 power-meter-server.debhelper.log
 power-meter-server.substvars

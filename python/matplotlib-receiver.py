@@ -28,9 +28,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 import powermeter
+import tzlocal
 
 history = timedelta(seconds=60)
 matplotlib.rcParams["toolbar"] = "None"
+matplotlib.rcParams["timezone"] = tzlocal.get_localzone()
 
 def receive_loop(serial_numbers=None, ip4_numbers=None):
 	meter = powermeter.PowerMeterNumPy(serial_numbers, ip4_numbers, always_yield=True, history=history)

@@ -7,14 +7,20 @@ Standards-Version: 3.9.6
 
 Package: power-meter-python3
 Architecture: all
-Depends: ${misc:Depends}, python3 (>= 3.5.1), python3-yaml (>= 3.11)
+Depends: ${misc:Depends}, python3 (>= 3.5.1), python3-yaml (>= 3.11), python3-tz (>= 2014.10~dfsg1), python3-tzlocal (>= 1.2)
 Description: Power Meter library (Python 3)
  Library for handling Power Meter output.
 
-Package: power-meter-client
+Package: power-meter-client-cli
 Architecture: all
-Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-matplotlib (>= 1.5.1), python3-numpy (>= 1:1.11.0)
-Description: Power Meter client utilities
+Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-numpy (>= 1:1.11.0), python3-posix-ipc (>= 0.9.8)
+Description: Power Meter client utilities (CLI)
+ Applications for handling Power Meter output.
+
+Package: power-meter-client-gui
+Architecture: all
+Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-matplotlib (>= 1.5.1)
+Description: Power Meter client utilities (GUI)
  Applications for handling Power Meter output.
 
 Package: power-meter-server

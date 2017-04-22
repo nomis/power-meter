@@ -17,8 +17,10 @@
 from collections import OrderedDict
 from datetime import datetime, timedelta
 import logging
+import pytz
 import socket
 import struct
+import tzlocal
 import yaml
 
 
@@ -66,7 +68,10 @@ class PowerMeter:
 					if serial_number and (not self.serial_numbers or serial_number in self.serial_numbers):
 						reading = data.get("meter", {}).get("reading", {})
 						if reading:
-							yield Reading(serial_number, data["meter"]["reading"])
+							ts = data["meter"].get("timestamp")
+							if ts:
+								pytz.utc.localize(datetime.utcfromtimestamp(ts))
+							yield Reading(serial_number, data["meter"]["reading"], data["meter"].get("timestamp"))
 			except BlockingIOError:
 				yield None
 
@@ -85,10 +90,13 @@ _Reading__fields = OrderedDict([
 ])
 
 class Reading:
-	def __init__(self, serial_number, data):
+	def __init__(self, serial_number, data, timestamp=None):
 		self.serialNumber = serial_number
 		self._data = data
-		self.ts = datetime.today()
+		if timestamp:
+			self.ts = timestamp
+		else:
+			self.ts = pytz.utc.localize(datetime.utcnow())
 
 	def __getattr__(self, key):
 		if key in __fields:
@@ -120,8 +128,8 @@ try:
 
 
 	_PowerMeterNumPy__fields = _Reading__fields
-#	_PowerMeterNumPy__dtype = [("ts", "datetime64[us]")] + [(name, "float64") for name in _PowerMeterNumPy__fields.keys()]
 	_PowerMeterNumPy__dtype = [("ts", "O")] + [(name, "float64") for name in _PowerMeterNumPy__fields.keys()]
+	_PowerMeterNumPy__localtz = tzlocal.get_localzone()
 
 	class PowerMeterNumPy(PowerMeter):
 		def __init__(self, serial_numbers=None, ip4_sources=None, always_yield=False, history=timedelta(seconds=60)):
@@ -141,11 +149,12 @@ try:
 					if now == last:
 						continue
 					last = now
+					local_now = now.astimezone(__localtz)
 
-					np_reading = tuple([now] + [reading[name] for name in __fields])
+					np_reading = tuple([local_now] + [reading[name] for name in __fields])
 					np_data = np.array([np_reading], dtype=__dtype)
 					if data is None:
-						data = np.array([tuple([now - timedelta(seconds=i)] + [None for name in __fields]) for i in range(self.history.seconds, 0, -1)], dtype=__dtype)
+						data = np.array([tuple([(now - timedelta(seconds=i)).astimezone(__localtz)] + [None for name in __fields]) for i in range(self.history.seconds, 0, -1)], dtype=__dtype)
 					data = np.concatenate((data, np_data))
 
 					while data[["ts"]][0][0] < now - self.history:
