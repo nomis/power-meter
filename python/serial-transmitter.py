@@ -59,12 +59,13 @@ def transmit_loop(device, interface):
 			while True:
 				# Extract the last line of any data read
 				line = list(filter(None, os.read(input.fd, 4096).replace(b"\r", b"").split(b"\n")))[-1]
-				log.debug(line)
 
 				now = int(time.time())
 				if now != last:
-					output.sendto(line, (powermeter.IP4_GROUP, powermeter.PORT))
+					output.sendto(line + b"\ntimestamp: " + str(now).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
 				last = now
+
+				log.debug(line)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Power Meter transmitter")
