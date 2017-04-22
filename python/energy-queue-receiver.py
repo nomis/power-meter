@@ -28,7 +28,7 @@ import systemd.daemon
 log = logging.getLogger("readings")
 
 def receive_loop(mq_name, serial_numbers=None, ip4_numbers=None):
-	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192, max_message_size=4+4+4, read=False)
+	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192//100, max_message_size=4+4+4, read=False)
 	meter = powermeter.PowerMeter(serial_numbers, ip4_numbers)
 	last = None
 
@@ -46,14 +46,17 @@ def receive_loop(mq_name, serial_numbers=None, ip4_numbers=None):
 		if reading.reactiveEnergy is not None:
 			data += struct.pack("=f", reading.reactiveEnergy)
 			message += [str(reading.reactiveEnergy)]
+
 		try:
 			queue.send(data, timeout=0)
 			log.info("wrote {0} to queue".format(" ".join(message)))
+			systemd.daemon.notify("STATUS=Reading at {0}: ".format(reading.ts) + ", ".join(message[1:]) + " OK")
 		except posix_ipc.BusyError:
 			log.error("queue full writing {0}".format(" ".join(message)))
+			systemd.daemon.notify("STATUS=Reading at {0}: ".format(reading.ts) + ", ".join(message[1:]) + " QUEUE FULL")
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Power Meter receiver")
+	parser = argparse.ArgumentParser(description="Power Meter energy queue receiver")
 	parser.add_argument("-m", "--meter", metavar="SERIAL_NUMBER", type=str, action="append", help="filter power meter by serial number")
 	parser.add_argument("-s", "--source", metavar="IP_ADDRESS", type=str, action="append", help="filter power meter by IP address")
 	parser.add_argument("-q", "--queue", metavar="NAME", type=str, required=True, help="message queue to store energy readings in")

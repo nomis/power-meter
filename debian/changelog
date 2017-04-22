@@ -1,3 +1,9 @@
+power-meter (7) xenial; urgency=medium
+
+  * Add energy queue database service.
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 22 Apr 2017 23:24:28 +0100
+
 power-meter (6) xenial; urgency=medium
 
   * Add energy queue receiver service.

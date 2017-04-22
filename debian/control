@@ -13,7 +13,7 @@ Description: Power Meter library (Python 3)
 
 Package: power-meter-client-cli
 Architecture: all
-Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-numpy (>= 1:1.11.0), python3-posix-ipc (>= 0.9.8)
+Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-numpy (>= 1:1.11.0), python3-posix-ipc (>= 0.9.8), python3-psycopg2 (>= 2.6.1)
 Description: Power Meter client utilities (CLI)
  Applications for handling Power Meter output.
 
