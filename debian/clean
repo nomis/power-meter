@@ -1,0 +1,7 @@
+arduino/.travis.yml
+arduino/lib/readme.txt
+arduino/.pioenvs/
+arduino/.piolibdeps/
+arduino/.clang_complete
+arduino/.gcc-flags.json
+
