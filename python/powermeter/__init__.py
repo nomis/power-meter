@@ -68,10 +68,10 @@ class PowerMeter:
 					if serial_number and (not self.serial_numbers or serial_number in self.serial_numbers):
 						reading = data.get("meter", {}).get("reading", {})
 						if reading:
-							ts = data["meter"].get("timestamp")
+							ts = data.get("timestamp")
 							if ts:
-								pytz.utc.localize(datetime.utcfromtimestamp(ts))
-							yield Reading(serial_number, data["meter"]["reading"], data["meter"].get("timestamp"))
+								ts = pytz.utc.localize(datetime.utcfromtimestamp(ts))
+							yield Reading(serial_number, data["meter"]["reading"], ts)
 			except BlockingIOError:
 				yield None
 
