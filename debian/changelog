@@ -1,3 +1,9 @@
+power-meter (8) xenial; urgency=medium
+
+  * Retry energy queue database updates if an exception occurs
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 29 Apr 2017 10:59:37 +0100
+
 power-meter (7) xenial; urgency=medium
 
   * Add energy queue database service.

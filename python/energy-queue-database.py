@@ -40,6 +40,7 @@ def database_insert(meter, dsn, ts, value):
 
 	try:
 		backoff = 0
+		conn = None
 
 		while True:
 			try:
@@ -47,6 +48,24 @@ def database_insert(meter, dsn, ts, value):
 					db = psycopg2.pool.ThreadedConnectionPool(1, 5, dsn, connection_factory=psycopg2.extras.RealDictConnection)
 
 				conn = db.getconn()
+				c = conn.cursor()
+
+				exists = False
+
+				c.execute("SELECT value FROM readings WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
+				row = c.fetchone()
+				if row:
+					if row["value"] == value:
+						exists = True
+
+				if not exists:
+					c.execute("INSERT INTO readings (meter, ts, value) VALUES(%(meter)s, %(ts)s, %(value)s)", { "meter": meter, "ts": ts, "value": value })
+					systemd.daemon.notify("STATUS=Insert {0} for {1} at {2}".format(value, meter, ts))
+
+				conn.commit()
+				c.close()
+
+				return
 			except KeyboardInterrupt:
 				raise
 			except SystemExit:
@@ -62,26 +81,9 @@ def database_insert(meter, dsn, ts, value):
 					backoff += 1
 
 				continue
-
-			c = conn.cursor()
-
-			exists = False
-
-			c.execute("SELECT value FROM readings WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
-			row = c.fetchone()
-			if row:
-				if row["value"] == value:
-					exists = True
-
-			if not exists:
-				c.execute("INSERT INTO readings (meter, ts, value) VALUES(%(meter)s, %(ts)s, %(value)s)", { "meter": meter, "ts": ts, "value": value })
-				systemd.daemon.notify("STATUS=Insert {0} for {1} at {2}".format(value, meter, ts))
-
-			conn.commit()
-			c.close()
-
-			db.putconn(conn)
-			return
+			finally:
+				if db and conn:
+					db.putconn(conn)
 	except:
 		for line in traceback.format_exc().split("\n"):
 			log.error(line)
