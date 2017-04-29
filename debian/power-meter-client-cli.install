@@ -2,3 +2,4 @@ debian/tmp/usr/lib/power-meter/basic-receiver.py
 debian/tmp/usr/lib/power-meter/numpy-receiver.py
 debian/tmp/usr/lib/power-meter/energy-queue-receiver.py
 debian/tmp/usr/lib/power-meter/energy-queue-database.py
+debian/tmp/usr/lib/power-meter/rrd-receiver.py
