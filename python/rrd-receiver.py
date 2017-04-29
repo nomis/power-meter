@@ -23,7 +23,9 @@ import os
 import powermeter
 import re
 import rrdtool
+import sys
 import systemd.daemon
+import traceback
 
 log = logging.getLogger("readings")
 
@@ -77,8 +79,19 @@ class RRD:
 def _RRD__update(filename, reading, fields):
 	template = ":".join(fields)
 	data = ":".join([str(x) for x in [int(reading.ts.timestamp())] + [reading[field] if reading[field] is not None else "U" for field in fields]])
-	log.debug("Update %s: %s = %s", filename, template, data)
-	rrdtool.update(filename, "-s", "-t", template, data)
+	log.info("Update %s: %s = %s", filename, template, data)
+	try:
+		rrdtool.update(filename, "-s", "-t", template, data)
+	except KeyboardInterrupt:
+		raise
+	except SystemExit:
+		raise
+	except:
+		for line in traceback.format_exc().split("\n"):
+			log.error(line)
+
+		systemd.daemon.notify("STATUS=Update ({0}: {1} = {2}) error: {3}".format(filename, template, data, sys.exc_info()[1]))
+		raise
 
 
 def receive_loop(output_directory, serial_numbers=None, ip4_numbers=None):
@@ -94,12 +107,12 @@ def receive_loop(output_directory, serial_numbers=None, ip4_numbers=None):
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Power Meter receiver for RRD file store")
-	parser.add_argument("-d", "--debug", action="store_const", default=logging.INFO, const=logging.DEBUG, help="enable debug")
+	parser.add_argument("-v", "--verbose", action="store_const", default=logging.ERROR, const=logging.INFO, help="verbose mode")
 	parser.add_argument("-m", "--meter", metavar="SERIAL_NUMBER", type=str, action="append", help="filter power meter by serial number")
 	parser.add_argument("-s", "--source", metavar="IP_ADDRESS", type=str, action="append", help="filter power meter by IP address")
 	parser.add_argument("-o", "--output", metavar="DIRECTORY", type=str, default=".", help="output directory")
 	args = parser.parse_args()
 
-	logging.basicConfig(level=args.debug, format="%(asctime)s.%(msecs)03d  %(levelname)5s  %(message)s", datefmt="%F %T")
+	logging.basicConfig(level=args.verbose, format="%(asctime)s.%(msecs)03d  %(levelname)5s  %(message)s", datefmt="%F %T")
 
 	receive_loop(args.output, args.meter, args.source)
