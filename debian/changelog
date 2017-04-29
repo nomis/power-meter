@@ -1,3 +1,9 @@
+power-meter (9) xenial; urgency=medium
+
+  * Add rrd receiver service.
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 29 Apr 2017 15:04:43 +0100
+
 power-meter (8) xenial; urgency=medium
 
   * Retry energy queue database updates if an exception occurs

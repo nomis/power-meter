@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Simon Arlott <ubuntu@sa.me.uk>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.6
+Standards-Version: 3.9.7
 
 Package: power-meter-python3
 Architecture: all
@@ -13,7 +13,7 @@ Description: Power Meter library (Python 3)
 
 Package: power-meter-client-cli
 Architecture: all
-Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-numpy (>= 1:1.11.0), python3-posix-ipc (>= 0.9.8), python3-psycopg2 (>= 2.6.1)
+Depends: ${misc:Depends}, power-meter-python3 (= ${source:Version}), python3 (>= 3.5.1), python3-numpy (>= 1:1.11.0), python3-posix-ipc (>= 0.9.8), python3-psycopg2 (>= 2.6.1), python3-rrdtool (>= 0.1.11)
 Description: Power Meter client utilities (CLI)
  Applications for handling Power Meter output.
 
