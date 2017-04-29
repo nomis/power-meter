@@ -18,6 +18,7 @@
 
 import argparse
 import datetime
+import decimal
 import logging
 import logging.handlers
 import os
@@ -55,7 +56,7 @@ def database_insert(meter, dsn, ts, value):
 				c.execute("SELECT value FROM readings WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
 				row = c.fetchone()
 				if row:
-					if row["value"] == value.quantize(row["value"]):
+					if row["value"] == decimal.Decimal(value).quantize(row["value"]):
 						exists = True
 
 				if not exists:

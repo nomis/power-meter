@@ -1,3 +1,9 @@
+power-meter (12) xenial; urgency=medium
+
+  * Fix energy database script by using decimal.Decimal instead of float.
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 29 Apr 2017 21:29:03 +0100
+
 power-meter (11) xenial; urgency=medium
 
   * Fix energy database script by rounding numbers to match the database value before comparing.
