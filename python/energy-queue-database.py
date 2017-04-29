@@ -60,7 +60,7 @@ def database_insert(meter, dsn, ts, value):
 
 				if not exists:
 					c.execute("INSERT INTO readings (meter, ts, value) VALUES(%(meter)s, %(ts)s, %(value)s)", { "meter": meter, "ts": ts, "value": value })
-					systemd.daemon.notify("STATUS=Insert {0} for {1} at {2}".format(value, meter, ts))
+					systemd.daemon.notify("STATUS=Insert {0:.3f} for {1} at {2}".format(value, meter, ts))
 
 				conn.commit()
 				c.close()
