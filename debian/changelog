@@ -1,3 +1,9 @@
+power-meter (11) xenial; urgency=medium
+
+  * Fix energy database script by rounding numbers to match the database value before comparing.
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 29 Apr 2017 21:08:17 +0100
+
 power-meter (10) xenial; urgency=medium
 
   * Add rrd receiver service.
