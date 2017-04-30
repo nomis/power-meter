@@ -46,10 +46,13 @@ start_value numeric;
 stop_value numeric;
 scale numeric;
 BEGIN
-start_value := meter_reading_value(meter, start_ts);
-IF start_value IS NULL THEN RAISE NOTICE 'No start reading for meter'; RETURN NULL; END IF;
 stop_value := meter_reading_value(meter, stop_ts);
-IF stop_value IS NULL THEN RAISE NOTICE 'No stop reading for meter'; RETURN NULL; END IF;
+IF stop_value IS NULL THEN RAISE NOTICE 'No stop reading for meter'; RETURN 0; END IF;
+start_value := meter_reading_value(meter, start_ts);
+IF start_value IS NULL THEN
+start_value := meter_reading_value(meter, next_reading_ts(meter, start_ts));
+END IF;
+IF start_value IS NULL THEN RAISE NOTICE 'No start reading for meter'; RETURN 0; END IF;
 
 IF stop_value < start_value THEN start_value := start_value + meter_wrap_value(meter); END IF;
 
