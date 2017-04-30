@@ -74,7 +74,7 @@ bool RI_D19_80_C::readMeasurements() {
 	activePower = Decimal(modbus.getResponseBuffer(0x0003), 0);
 	reactivePower = Decimal(modbus.getResponseBuffer(0x0004), 0);
 	apparentPower = Decimal(modbus.getResponseBuffer(0x0005), 0);
-	powerFactor = Decimal(modbus.getResponseBuffer(0x0006), -1);
+	powerFactor = Decimal((int16_t)modbus.getResponseBuffer(0x0006), -1);
 	activeEnergy = Decimal(
 		((uint32_t)modbus.getResponseBuffer(0x0007) << 16)
 		| (uint32_t)modbus.getResponseBuffer(0x0008), -2);
@@ -83,7 +83,7 @@ bool RI_D19_80_C::readMeasurements() {
 		((uint32_t)modbus.getResponseBuffer(0x0011) << 16)
 		| (uint32_t)modbus.getResponseBuffer(0x0012), -2);
 #endif
-	temperature = Decimal(modbus.getResponseBuffer(0x0025), 0);
+	temperature = Decimal((int8_t)modbus.getResponseBuffer(0x0025), 0);
 
 	if (debug) {
 		bool first = true;
