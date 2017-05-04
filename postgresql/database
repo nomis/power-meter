@@ -30,93 +30,153 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
+-- Name: reading; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE reading AS (
+	value numeric,
+	ts timestamp with time zone
+);
+
+
+--
+-- Name: meter_reading_scale(integer, integer, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION meter_reading_scale(base_meter integer, meter integer, ts timestamp with time zone) RETURNS numeric
+    LANGUAGE plpgsql STABLE STRICT
+    AS $$DECLARE
+  base_prev reading;
+  base_nearest reading;
+  prev_value numeric;
+  nearest_value numeric;
+  scale numeric;
+BEGIN
+  base_nearest := next_reading(base_meter, ts);
+  IF base_nearest.value IS NULL THEN
+    base_nearest := prev_reading(base_meter, ts);
+  END IF;
+  IF base_nearest.value IS NULL THEN RAISE DEBUG 'No reading for base meter near %', ts; END IF;
+
+  base_prev := prev_reading(base_meter, base_nearest.ts - '00:00:01'::interval);
+  IF base_prev.value IS NULL THEN RAISE DEBUG 'No previous reading for base meter before %', ts; END IF;
+
+  IF base_prev.value = base_nearest.value THEN
+    base_prev.value := NULL;
+    base_nearest.value := NULL;
+    RAISE DEBUG 'Not enough readings for base meter';
+  END IF;
+
+  scale := 1;
+
+  IF base_prev.value IS NOT NULL AND base_nearest.value IS NOT NULL THEN
+    IF base_nearest.value < base_prev.value THEN base_nearest.value := base_nearest.value + meter_wrap_value(base_meter); END IF;
+
+    RAISE DEBUG 'Base meter nearest: % at %', base_nearest.value, base_nearest.ts;
+    RAISE DEBUG 'Base meter previous: % at %', base_prev.value, base_prev.ts;
+    RAISE DEBUG 'Base meter usage: %', (base_nearest.value - base_prev.value);
+
+    IF base_nearest.value < base_prev.value THEN RAISE NOTICE 'Unresolved wrap on base meter'; RETURN NULL; END IF;
+
+    prev_value := meter_reading_value(meter, base_prev.ts);
+    IF prev_value IS NULL THEN RAISE DEBUG 'No reading for meter at %', base_prev.ts; END IF;
+
+    nearest_value := meter_reading_value(meter, base_nearest.ts);
+    IF nearest_value IS NULL THEN RAISE DEBUG 'No reading for meter at %', base_nearest.ts; END IF;
+
+    IF nearest_value < prev_value THEN nearest_value := nearest_value + meter_wrap_value(meter); END IF;
+
+    RAISE DEBUG 'Meter nearest: %', nearest_value;
+    RAISE DEBUG 'Meter previous: %', prev_value;
+    RAISE DEBUG 'Meter usage: %', (nearest_value - prev_value);
+
+    IF nearest_value < prev_value THEN RAISE NOTICE 'Unresolved wrap on meter'; RETURN NULL; END IF;
+
+    IF nearest_value IS NOT NULL and prev_value IS NOT NULL THEN
+      scale := (base_nearest.value - base_prev.value)/(nearest_value - prev_value);
+    END IF;
+  END IF;
+
+  RAISE DEBUG 'Scale at %: %', ts, scale;
+
+  RETURN scale;
+END;$$;
+
+
+--
 -- Name: meter_reading_usage_rescale(integer, integer, timestamp with time zone, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION meter_reading_usage_rescale(base_meter integer, meter integer, start_ts timestamp with time zone, stop_ts timestamp with time zone) RETURNS numeric
     LANGUAGE plpgsql STABLE STRICT
     AS $$DECLARE
-base_prev_value numeric;
-base_next_value numeric;
-base_prev_ts timestamp with time zone;
-base_next_ts timestamp with time zone;
-prev_value numeric;
-next_value numeric;
-start_value numeric;
-stop_value numeric;
-scale numeric;
+  base_start_prev_ts timestamp with time zone;
+  base_stop_prev_ts timestamp with time zone;
+  start_scale numeric;
+  stop_scale numeric;
+  start_prev_value numeric;
+  stop_prev_value numeric;
+  start_value numeric;
+  stop_value numeric;
 BEGIN
-stop_value := meter_reading_value(meter, stop_ts);
-IF stop_value IS NULL THEN RAISE NOTICE 'No stop reading for meter'; RETURN 0; END IF;
-start_value := meter_reading_value(meter, start_ts);
-IF start_value IS NULL THEN
-start_value := meter_reading_value(meter, next_reading_ts(meter, start_ts));
-END IF;
-IF start_value IS NULL THEN RAISE NOTICE 'No start reading for meter'; RETURN 0; END IF;
+  base_start_prev_ts = prev_reading_ts(base_meter, start_ts);
+  base_stop_prev_ts = prev_reading_ts(base_meter, stop_ts);
+  IF base_start_prev_ts IS NULL THEN RAISE NOTICE 'No previous reading before start for base meter'; RETURN 0; END IF;
+  IF base_stop_prev_ts IS NULL THEN RAISE NOTICE 'No previous reading before stop for base meter'; RETURN 0; END IF;
 
-IF stop_value < start_value THEN start_value := start_value + meter_wrap_value(meter); END IF;
+  RAISE DEBUG 'Base meter start (previous): %', base_start_prev_ts;
+  RAISE DEBUG 'Base meter stop (previous): %', base_stop_prev_ts;
 
-RAISE DEBUG 'Period start: %', start_value;
-RAISE DEBUG 'Period stop: %', stop_value;
-RAISE DEBUG 'Period usage: %', (stop_value - start_value);
+  start_prev_value = meter_reading_value(meter, base_start_prev_ts);
+  stop_prev_value = meter_reading_value(meter, base_stop_prev_ts);
+  IF start_prev_value IS NULL AND stop_prev_value IS NULL THEN RAISE NOTICE 'No previous reading before start or stop for meter'; RETURN 0; END IF;
 
-IF stop_value < start_value THEN RAISE NOTICE 'Unresolved wrap on meter'; RETURN NULL; END IF;
+  start_value = meter_reading_value(meter, start_ts);
+  IF start_value IS NULL THEN
+    start_value := meter_reading_value(meter, next_reading_ts(meter, start_ts));
+  END IF;
+  stop_value = meter_reading_value(meter, stop_ts);
 
-base_next_value := next_reading_value(base_meter, stop_ts);
-base_next_ts := next_reading_ts(base_meter, stop_ts);
-IF base_next_value IS NULL THEN
-base_next_value := prev_reading_value(base_meter, stop_ts);
-base_next_ts := prev_reading_ts(base_meter, stop_ts);
-END IF;
-IF base_next_value IS NULL THEN RAISE DEBUG 'No next reading for base meter'; END IF;
+  IF start_value IS NULL THEN RAISE NOTICE 'No start reading for meter'; RETURN 0; END IF;
+  IF stop_value IS NULL THEN RAISE NOTICE 'No stop reading for meter'; RETURN 0; END IF;
 
-base_prev_value := prev_reading_value(base_meter, base_next_ts - '00:00:01'::interval);
-base_prev_ts := prev_reading_ts(base_meter, base_next_ts - '00:00:01'::interval);
-IF base_prev_value IS NULL THEN RAISE DEBUG 'No previous reading for base meter'; END IF;
+  IF start_prev_value IS NULL THEN start_prev_value := start_value; END IF;
 
-IF base_prev_value = base_next_value THEN
-base_prev_value := NULL;
-base_next_value := NULL;
-RAISE DEBUG 'Not enough readings for base meter';
-END IF;
+  IF stop_prev_value < start_prev_value THEN stop_prev_value := stop_prev_value + meter_wrap_value(meter); END IF;
+  IF start_value < start_prev_value THEN
+    start_value := start_value + meter_wrap_value(meter);
+    stop_value := stop_value + meter_wrap_value(meter);
+  END IF;
+  IF stop_value < stop_prev_value THEN
+    start_value := start_value + meter_wrap_value(meter);
+    stop_value := stop_value + meter_wrap_value(meter);
+  END IF;
+  IF stop_value < start_value THEN stop_value := stop_value + meter_wrap_value(meter); END IF;
 
-IF base_prev_value IS NULL OR base_next_value IS NULL THEN
-prev_value := NULL;
-next_value := NULL;
-scale := 1;
-ELSE
-IF base_next_value < base_prev_value THEN base_next_value := base_next_value + meter_wrap_value(base_meter); END IF;
+  RAISE DEBUG 'Meter start (previous): %', start_prev_value;
+  RAISE DEBUG 'Meter stop (previous): %', stop_prev_value;
 
-RAISE DEBUG 'Base meter previous: % at %', base_prev_value, base_prev_ts;
-RAISE DEBUG 'Base meter next: % at %', base_next_value, base_next_ts;
-RAISE DEBUG 'Base meter usage: %', (base_next_value - base_prev_value);
+  RAISE DEBUG 'Period start: %', start_value;
+  RAISE DEBUG 'Period stop: %', stop_value;
+  RAISE DEBUG 'Period usage: %', (stop_value - start_value);
 
-IF base_next_value < base_prev_value THEN RAISE NOTICE 'Unresolved wrap on base meter'; RETURN NULL; END IF;
+  IF stop_prev_value < start_prev_value THEN RAISE NOTICE 'Unresolved wrap on meter % < %', stop_prev_value, start_prev_value; RETURN NULL; END IF;
+  IF stop_value < start_value THEN RAISE NOTICE 'Unresolved wrap on meter % < %', stop_value, start_value; RETURN NULL; END IF;
 
-prev_value := meter_reading_value(meter, base_prev_ts);
-IF prev_value IS NULL THEN RAISE DEBUG 'No previous reading for meter'; END IF;
+  start_scale = meter_reading_scale(base_meter, meter, start_ts);
+  stop_scale = meter_reading_scale(base_meter, meter, stop_ts);
 
-next_value := meter_reading_value(meter, base_next_ts);
-IF next_value IS NULL THEN RAISE DEBUG 'No next reading for meter'; END IF;
+  RAISE DEBUG 'Start scale: %', start_scale;
+  RAISE DEBUG 'Stop scale: %', stop_scale;
 
-IF next_value < prev_value THEN next_value := next_value + meter_wrap_value(meter); END IF;
+  start_value := start_prev_value + (start_value - start_prev_value) * start_scale;
+  stop_value := stop_prev_value + (stop_value - stop_prev_value) * stop_scale;
 
-RAISE DEBUG 'Meter previous: %', prev_value;
-RAISE DEBUG 'Meter next: %', next_value;
-RAISE DEBUG 'Meter usage: %', (next_value - prev_value);
+  RAISE DEBUG 'Period start: %', start_value;
+  RAISE DEBUG 'Period stop: %', stop_value;
+  RAISE DEBUG 'Period usage: %', (stop_value - start_value);
 
-IF next_value < prev_value THEN RAISE NOTICE 'Unresolved wrap on meter'; RETURN NULL; END IF;
-
-IF next_value IS NOT NULL and prev_value IS NOT NULL THEN
-scale := (base_next_value - base_prev_value)/(next_value - prev_value);
-
-
-END IF;
-END IF;
-
-RAISE DEBUG 'Scale: %', scale;
-
-RETURN ((stop_value - start_value) * scale)::numeric(9, 3);
+  RETURN (stop_value - start_value)::numeric(9, 3);
 END;$$;
 
 
@@ -157,6 +217,15 @@ CREATE FUNCTION meter_wrap_value(meter integer) RETURNS numeric
 
 
 --
+-- Name: next_reading(integer, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION next_reading(meter integer, after timestamp with time zone) RETURNS reading
+    LANGUAGE sql STABLE STRICT
+    AS $_$SELECT value, ts FROM readings WHERE meter = $1 and ts >= $2 ORDER BY ts LIMIT 1;$_$;
+
+
+--
 -- Name: next_reading_ts(integer, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -172,6 +241,15 @@ CREATE FUNCTION next_reading_ts(meter integer, after timestamp with time zone) R
 CREATE FUNCTION next_reading_value(meter integer, after timestamp with time zone) RETURNS numeric
     LANGUAGE sql STABLE STRICT
     AS $_$SELECT value FROM readings WHERE meter = $1 and ts >= $2 ORDER BY ts LIMIT 1;$_$;
+
+
+--
+-- Name: prev_reading(integer, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION prev_reading(meter integer, before timestamp with time zone) RETURNS reading
+    LANGUAGE sql STABLE STRICT
+    AS $_$SELECT value, ts FROM readings WHERE meter = $1 and ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
 
 
 --
