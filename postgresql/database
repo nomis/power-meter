@@ -72,9 +72,9 @@ BEGIN
   IF base_prev.value IS NOT NULL AND base_nearest.value IS NOT NULL THEN
     IF base_nearest.value < base_prev.value THEN base_nearest.value := base_nearest.value + meter_wrap_value(base_meter); END IF;
 
-    RAISE DEBUG 'Base meter nearest: % at %', base_nearest.value, base_nearest.ts;
-    RAISE DEBUG 'Base meter previous: % at %', base_prev.value, base_prev.ts;
-    RAISE DEBUG 'Base meter usage: %', (base_nearest.value - base_prev.value);
+    RAISE DEBUG ' Base meter nearest: % at %', base_nearest.value, base_nearest.ts;
+    RAISE DEBUG ' Base meter previous: % at %', base_prev.value, base_prev.ts;
+    RAISE DEBUG ' Base meter usage: %', (base_nearest.value - base_prev.value);
 
     IF base_nearest.value < base_prev.value THEN RAISE NOTICE 'Unresolved wrap on base meter'; RETURN NULL; END IF;
 
@@ -86,9 +86,9 @@ BEGIN
 
     IF nearest_value < prev_value THEN nearest_value := nearest_value + meter_wrap_value(meter); END IF;
 
-    RAISE DEBUG 'Meter nearest: %', nearest_value;
-    RAISE DEBUG 'Meter previous: %', prev_value;
-    RAISE DEBUG 'Meter usage: %', (nearest_value - prev_value);
+    RAISE DEBUG ' Meter nearest: %', nearest_value;
+    RAISE DEBUG ' Meter previous: %', prev_value;
+    RAISE DEBUG ' Meter usage: %', (nearest_value - prev_value);
 
     IF nearest_value < prev_value THEN RAISE NOTICE 'Unresolved wrap on meter'; RETURN NULL; END IF;
 
@@ -97,7 +97,7 @@ BEGIN
     END IF;
   END IF;
 
-  RAISE DEBUG 'Scale at %: %', ts, scale;
+  RAISE DEBUG ' Scale at %: %', ts, scale;
 
   RETURN scale;
 END;$$;
@@ -114,10 +114,12 @@ CREATE FUNCTION meter_reading_usage_rescale(base_meter integer, meter integer, s
   base_stop_prev_ts timestamp with time zone;
   start_scale numeric;
   stop_scale numeric;
+  scale numeric;
   start_prev_value numeric;
   stop_prev_value numeric;
   start_value numeric;
   stop_value numeric;
+  usage numeric;
 BEGIN
   base_start_prev_ts = prev_reading_ts(base_meter, start_ts);
   base_stop_prev_ts = prev_reading_ts(base_meter, stop_ts);
@@ -164,19 +166,22 @@ BEGIN
   IF stop_value < start_value THEN RAISE NOTICE 'Unresolved wrap on meter % < %', stop_value, start_value; RETURN NULL; END IF;
 
   start_scale = meter_reading_scale(base_meter, meter, start_ts);
-  stop_scale = meter_reading_scale(base_meter, meter, stop_ts);
-
   RAISE DEBUG 'Start scale: %', start_scale;
+
+  stop_scale = meter_reading_scale(base_meter, meter, stop_ts);
   RAISE DEBUG 'Stop scale: %', stop_scale;
 
-  start_value := start_prev_value + (start_value - start_prev_value) * start_scale;
-  stop_value := stop_prev_value + (stop_value - stop_prev_value) * stop_scale;
+  start_scale := start_scale * date_part('epoch', start_ts - base_start_prev_ts) / date_part('epoch', (start_ts - base_start_prev_ts) + (stop_ts - base_stop_prev_ts));
+  stop_scale := stop_scale * date_part('epoch', stop_ts - base_stop_prev_ts) / date_part('epoch', (start_ts - base_start_prev_ts) + (stop_ts - base_stop_prev_ts));
+  scale := start_scale + stop_scale;
 
-  RAISE DEBUG 'Period start: %', start_value;
-  RAISE DEBUG 'Period stop: %', stop_value;
-  RAISE DEBUG 'Period usage: %', (stop_value - start_value);
+  RAISE DEBUG 'Scale: % + % = %', start_scale, stop_scale, scale;
 
-  RETURN (stop_value - start_value)::numeric(9, 3);
+  usage := (stop_value - start_value) * scale;
+
+  RAISE DEBUG 'Period usage: %', usage;
+
+  RETURN usage::numeric(9, 3);
 END;$$;
 
 
