@@ -126,7 +126,7 @@ bool RI_D19_80_C::readMeasurements() {
 		}
 
 		// Check for new values of unknown register 0x0026
-		// (this is probably a CRC or LRC for the serial number)
+		// (this is probably a software version)
 		uint8_t unknown = modbus.getResponseBuffer(0x0026);
 		if (unknown != 0xF6 && unknown != 0xFB) {
 			output->print(first ? "# " : "; ");
