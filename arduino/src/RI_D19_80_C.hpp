@@ -66,6 +66,7 @@ public:
 	virtual ~RI_D19_80_C();
 	void setPassword(uint32_t value);
 	bool writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
+	bool writeReactiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
 	bool writeBaudRate(unsigned int baudRate);
 	bool writeAddress(uint8_t address);
 	bool writePassword(uint32_t value);
@@ -83,6 +84,7 @@ protected:
 	uint8_t address;
 
 private:
+	bool writeEnergy(uint16_t reg, unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
 	/**
 	Transmit password:
 		## 28 FE 01 00 02 04 ** ** ** ** [CRC16]
