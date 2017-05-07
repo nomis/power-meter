@@ -52,7 +52,7 @@ Registers (values are Big-endian):
 	0x001E Unused
 	0x001F Unused
 	0x0020 Unused
-	0x0021 8-byte Date/Time in BCD (CC yy mm dd uu HH MM SS)
+	0x0021 8-byte Date/Time in BCD (CC yy mm dd ww HH MM SS)
 	0x0025 16-bit Temperature in °C (8-bit signed value in LSB)
 	0x0026 16-bit Unknown
 	0x0027 6-byte Serial number in Packed BCD (## ## ## ## ## ##)
