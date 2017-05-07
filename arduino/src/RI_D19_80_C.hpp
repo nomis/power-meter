@@ -67,6 +67,7 @@ public:
 	void setPassword(uint32_t value);
 	bool writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
 	bool writeReactiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
+	bool writeDateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t day_of_week, uint8_t hour, uint8_t minute, uint8_t second);
 	bool writeBaudRate(unsigned int baudRate);
 	bool writeAddress(uint8_t address);
 	bool writePassword(uint32_t value);

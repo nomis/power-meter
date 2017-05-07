@@ -35,6 +35,20 @@ static char bcd2char(uint16_t value) {
 	return value < 10 ? ('0' + value) : ('A' + (value - 10));
 }
 
+static uint16_t dec2bcd(uint16_t value) {
+	uint16_t tmp = 0;
+
+	tmp |= (value % 10);
+	value /= 10;
+	tmp |= (value % 10) << 4;
+	value /= 10;
+	tmp |= (value % 10) << 8;
+	value /= 10;
+	tmp |= (value % 10) << 12;
+
+	return tmp;
+}
+
 bool RI_D19_80_C::readSerialNumber() {
 	constexpr uint8_t len = 3;
 	uint8_t ret;
@@ -207,6 +221,33 @@ bool RI_D19_80_C::writeEnergy(uint16_t reg, unsigned int count, uint32_t value1,
 		modbus.send((uint16_t)(value4 >> 16));
 		modbus.send((uint16_t)value4);
 	}
+
+	ret = modbus.writeMultipleRegisters();
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	return true;
+}
+
+bool RI_D19_80_C::writeDateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t day_of_week, uint8_t hour, uint8_t minute, uint8_t second) {
+	uint8_t ret;
+
+	if (year > 9999 || month < 1 || month > 12 || day < 1 || day > 31 || day_of_week > 6 || hour > 23 || minute > 59 || second > 59) {
+		return false;
+	}
+
+	if (!transmitPassword()) {
+		return false;
+	}
+
+	modbus.begin(address, *io);
+	modbus.beginTransmission(0x0021);
+
+	modbus.send(dec2bcd(year));
+	modbus.send((uint16_t)((dec2bcd(month) << 8) | dec2bcd(day)));
+	modbus.send((uint16_t)((dec2bcd(day_of_week) << 8) | dec2bcd(hour)));
+	modbus.send((uint16_t)((dec2bcd(minute) << 8) | dec2bcd(second)));
 
 	ret = modbus.writeMultipleRegisters();
 	if (ret != ModbusMaster::ku8MBSuccess) {
