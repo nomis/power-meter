@@ -149,6 +149,21 @@ bool RI_D19_80_C::readMeasurements() {
 			output->print(modbus.getResponseBuffer(0x0026), HEX);
 		}
 
+		ret = modbus.readHoldingRegisters(0x002E, 2);
+		if (ret == ModbusMaster::ku8MBSuccess) {
+			output->print(first ? "# " : "; ");
+			first = false;
+			output->print("0x002E..0x002F = ");
+
+			for (uint8_t i = 0; i <= 1; i++) {
+				if (i > 0) {
+					output->print(" ");
+				}
+
+				output->print(modbus.getResponseBuffer(i), HEX);
+			}
+		}
+
 		if (!first) {
 			output->println();
 		}

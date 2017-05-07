@@ -59,6 +59,8 @@ Registers (values are Big-endian):
 	0x002A 16-bit Baud rate (1=1200, 2=2400, 3=4800, 4=9600)
 	0x002B 16-bit Modbus address
 	0x002C 32-bit Password
+	0x002E Unknown
+	0x002F Unknown
 */
 class RI_D19_80_C: public PowerMeter {
 public:
