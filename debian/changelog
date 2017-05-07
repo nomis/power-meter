@@ -1,3 +1,9 @@
+power-meter (14) xenial; urgency=medium
+
+  * Store reactive readings in the database.
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 07 May 2017 15:48:20 +0100
+
 power-meter (12) xenial; urgency=medium
 
   * Fix energy database script by using decimal.Decimal instead of float.

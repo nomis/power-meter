@@ -222,7 +222,7 @@ CREATE FUNCTION meter_wrap_value(meter integer) RETURNS numeric
 
 CREATE FUNCTION next_reading(meter integer, after timestamp with time zone) RETURNS reading
     LANGUAGE sql STABLE STRICT
-    AS $_$SELECT value, ts FROM readings WHERE meter = $1 and ts >= $2 ORDER BY ts LIMIT 1;$_$;
+    AS $_$SELECT value, ts FROM readings_active WHERE meter = $1 and ts >= $2 ORDER BY ts LIMIT 1;$_$;
 
 
 --
@@ -231,7 +231,7 @@ CREATE FUNCTION next_reading(meter integer, after timestamp with time zone) RETU
 
 CREATE FUNCTION next_reading_ts(meter integer, after timestamp with time zone) RETURNS timestamp with time zone
     LANGUAGE sql STABLE STRICT
-    AS $_$SELECT ts FROM readings WHERE meter = $1 AND ts >= $2 ORDER BY ts LIMIT 1;$_$;
+    AS $_$SELECT ts FROM readings_active WHERE meter = $1 AND ts >= $2 ORDER BY ts LIMIT 1;$_$;
 
 
 --
@@ -240,7 +240,7 @@ CREATE FUNCTION next_reading_ts(meter integer, after timestamp with time zone) R
 
 CREATE FUNCTION next_reading_value(meter integer, after timestamp with time zone) RETURNS numeric
     LANGUAGE sql STABLE STRICT
-    AS $_$SELECT value FROM readings WHERE meter = $1 and ts >= $2 ORDER BY ts LIMIT 1;$_$;
+    AS $_$SELECT value FROM readings_active WHERE meter = $1 and ts >= $2 ORDER BY ts LIMIT 1;$_$;
 
 
 --
@@ -249,7 +249,7 @@ CREATE FUNCTION next_reading_value(meter integer, after timestamp with time zone
 
 CREATE FUNCTION prev_reading(meter integer, before timestamp with time zone) RETURNS reading
     LANGUAGE sql STABLE STRICT
-    AS $_$SELECT value, ts FROM readings WHERE meter = $1 and ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
+    AS $_$SELECT value, ts FROM readings_active WHERE meter = $1 and ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
 
 
 --
@@ -258,7 +258,7 @@ CREATE FUNCTION prev_reading(meter integer, before timestamp with time zone) RET
 
 CREATE FUNCTION prev_reading_ts(meter integer, before timestamp with time zone) RETURNS timestamp with time zone
     LANGUAGE sql STABLE STRICT
-    AS $_$SELECT ts FROM readings WHERE meter = $1 AND ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
+    AS $_$SELECT ts FROM readings_active WHERE meter = $1 AND ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
 
 
 --
@@ -267,7 +267,7 @@ CREATE FUNCTION prev_reading_ts(meter integer, before timestamp with time zone) 
 
 CREATE FUNCTION prev_reading_value(meter integer, before timestamp with time zone) RETURNS numeric
     LANGUAGE sql STABLE STRICT
-    AS $_$SELECT value FROM readings WHERE meter = $1 and ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
+    AS $_$SELECT value FROM readings_active WHERE meter = $1 and ts <= $2 ORDER BY ts DESC LIMIT 1;$_$;
 
 
 SET default_tablespace = '';
@@ -306,13 +306,24 @@ ALTER SEQUENCE meters_id_seq OWNED BY meters.id;
 
 
 --
--- Name: readings; Type: TABLE; Schema: public; Owner: -
+-- Name: readings_active; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE readings (
+CREATE TABLE readings_active (
     meter integer NOT NULL,
     ts timestamp with time zone DEFAULT now() NOT NULL,
-    value numeric(9,3)
+    value numeric(9,3) NOT NULL
+);
+
+
+--
+-- Name: readings_reactive; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE readings_reactive (
+    meter integer NOT NULL,
+    ts timestamp with time zone DEFAULT now() NOT NULL,
+    value numeric(9,3) NOT NULL
 );
 
 
@@ -343,8 +354,16 @@ ALTER TABLE ONLY meters
 -- Name: readings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY readings
+ALTER TABLE ONLY readings_active
     ADD CONSTRAINT readings_pkey PRIMARY KEY (meter, ts);
+
+
+--
+-- Name: readings_reactive_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY readings_reactive
+    ADD CONSTRAINT readings_reactive_pkey PRIMARY KEY (meter, ts);
 
 
 --

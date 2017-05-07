@@ -36,7 +36,21 @@ import traceback
 log = logging.getLogger("readings")
 db = None
 
-def database_insert(meter, dsn, ts, value):
+def cursor_insert_value(c, meter, ts, name, value):
+	exists = False
+
+	c.execute("SELECT value FROM readings_" + name + " WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
+	row = c.fetchone()
+	if row:
+		if row["value"] == decimal.Decimal(value).quantize(row["value"]):
+			exists = True
+
+	if not exists:
+		c.execute("INSERT INTO readings_" + name + " (meter, ts, value) VALUES(%(meter)s, %(ts)s, %(value)s)", { "meter": meter, "ts": ts, "value": value })
+
+	return "{1:.3f} ({0}) {2}".format(name, value, "exists" if exists else "inserted")
+
+def database_insert(meter, dsn, ts, active_energy, reactive_energy):
 	global db
 
 	try:
@@ -51,17 +65,12 @@ def database_insert(meter, dsn, ts, value):
 				conn = db.getconn()
 				c = conn.cursor()
 
-				exists = False
+				msg = cursor_insert_value(c, meter, ts, "active", active_energy)
+				if reactive_energy is not None:
+					msg += "; "
+					msg += cursor_insert_value(c, meter, ts, "reactive", reactive_energy)
 
-				c.execute("SELECT value FROM readings WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
-				row = c.fetchone()
-				if row:
-					if row["value"] == decimal.Decimal(value).quantize(row["value"]):
-						exists = True
-
-				if not exists:
-					c.execute("INSERT INTO readings (meter, ts, value) VALUES(%(meter)s, %(ts)s, %(value)s)", { "meter": meter, "ts": ts, "value": value })
-					systemd.daemon.notify("STATUS=Insert {0:.3f} for {1} at {2}".format(value, meter, ts))
+				systemd.daemon.notify("STATUS=Meter {0} at {1}: {2}".format(meter, ts, msg))
 
 				conn.commit()
 				c.close()
@@ -91,7 +100,7 @@ def database_insert(meter, dsn, ts, value):
 
 		raise
 
-def receive_loop(mq_name, dsn, active_meter, reactive_meter):
+def receive_loop(mq_name, dsn, meter):
 	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192, max_message_size=4+4+4, write=False)
 
 	systemd.daemon.notify("READY=1")
@@ -108,14 +117,11 @@ def receive_loop(mq_name, dsn, active_meter, reactive_meter):
 			continue
 
 		ts = pytz.utc.localize(datetime.datetime.utcfromtimestamp(ts))
-		database_insert(active_meter, dsn, ts, active_energy)
-		if reactive_meter is not None and reactive_energy is not None:
-			database_insert(reactive_meter, dsn, ts, reactive_energy)
+		database_insert(meter, dsn, ts, active_energy, reactive_energy)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Power Meter energy queue database client")
-	parser.add_argument("-a", "--active-meter", metavar="METER", type=str, required=True, help="meter identifier for active energy")
-	parser.add_argument("-r", "--reactive-meter", metavar="METER", type=str, help="meter identifier for reactive energy")
+	parser.add_argument("-m", "--meter", metavar="METER", type=str, required=True, help="meter identifier")
 	parser.add_argument("-q", "--queue", metavar="NAME", type=str, required=True, help="message queue to read energy readings from")
 	parser.add_argument("-d", "--database", metavar="NAME", type=str, required=True, help="message queue to read energy readings from")
 	args = parser.parse_args()
@@ -124,4 +130,4 @@ if __name__ == "__main__":
 	syslog.ident = "energy-queue-database[{0}]: ".format(os.getpid())
 	logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[syslog])
 
-	receive_loop(args.queue, args.database, args.active_meter, args.reactive_meter)
+	receive_loop(args.queue, args.database, args.meter)
