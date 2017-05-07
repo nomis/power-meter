@@ -92,11 +92,9 @@ bool RI_D19_80_C::readMeasurements() {
 	activeEnergy = Decimal(
 		((uint32_t)modbus.getResponseBuffer(0x0007) << 16)
 		| (uint32_t)modbus.getResponseBuffer(0x0008), -2);
-#if 0
 	reactiveEnergy = Decimal(
 		((uint32_t)modbus.getResponseBuffer(0x0011) << 16)
 		| (uint32_t)modbus.getResponseBuffer(0x0012), -2);
-#endif
 	temperature = Decimal((int8_t)modbus.getResponseBuffer(0x0025), 0);
 
 	if (debug) {
