@@ -200,6 +200,27 @@ bool RI_D19_80_C::writeReactiveEnergy(unsigned int count, uint32_t value1, uint3
 	return writeEnergy(0x0011, count, value1, value2, value3, value4);
 }
 
+bool RI_D19_80_C::resetEnergy() {
+	uint8_t ret;
+
+	if (!transmitPassword()) {
+		return false;
+	}
+
+	modbus.begin(address, *io);
+	modbus.beginTransmission(0x0007);
+
+	for (uint8_t i = 0; i < 20; i++)
+		modbus.send((uint16_t)0);
+
+	ret = modbus.writeMultipleRegisters();
+	if (ret != ModbusMaster::ku8MBSuccess) {
+		return false;
+	}
+
+	return true;
+}
+
 bool RI_D19_80_C::writeEnergy(uint16_t reg, unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4) {
 	uint8_t ret;
 

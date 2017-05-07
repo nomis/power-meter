@@ -144,5 +144,5 @@ void loop() {
 
 bool resetMeter(uint32_t password) {
 	meter.setPassword(password);
-	return meter.writeActiveEnergy(4, 0, 0, 0, 0);
+	return meter.resetEnergy();
 }
