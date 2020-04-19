@@ -1,3 +1,9 @@
+power-meter (14-1) bionic; urgency=medium
+
+  * Update for bionic
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 19 Apr 2020 15:26:30 +0100
+
 power-meter (14) xenial; urgency=medium
 
   * Store reactive readings in the database.
