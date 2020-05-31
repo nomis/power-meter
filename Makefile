@@ -18,3 +18,4 @@ install: all
 	$(INSTALL) -m 755 -D python/energy-queue-receiver.py $(DESTDIR)$(libdir)/power-meter/energy-queue-receiver.py
 	$(INSTALL) -m 755 -D python/energy-queue-database.py $(DESTDIR)$(libdir)/power-meter/energy-queue-database.py
 	$(INSTALL) -m 755 -D python/rrd-receiver.py $(DESTDIR)$(libdir)/power-meter/rrd-receiver.py
+	$(INSTALL) -m 755 -D python/influx-receiver.py $(DESTDIR)$(libdir)/power-meter/influx-receiver.py
