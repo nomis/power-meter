@@ -1,14 +1,8 @@
-power-meter (15-1) xenial; urgency=medium
-
-  * Fix install list
-
- -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 31 May 2020 19:23:12 +0100
-
-power-meter (15) xenial; urgency=medium
+power-meter (16) xenial; urgency=medium
 
   * Add influx client
 
- -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 31 May 2020 19:16:36 +0100
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 31 May 2020 19:23:12 +0100
 
 power-meter (14-1) bionic; urgency=medium
 
