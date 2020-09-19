@@ -62,6 +62,7 @@ def database_insert(meter, dsn, ts, active_energy, reactive_energy):
 				if not db:
 					db = psycopg2.pool.ThreadedConnectionPool(1, 5, dsn, connection_factory=psycopg2.extras.RealDictConnection)
 
+				conn = None
 				conn = db.getconn()
 				c = conn.cursor()
 
