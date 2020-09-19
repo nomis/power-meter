@@ -1,3 +1,9 @@
+power-meter (17) bionic; urgency=medium
+
+  * Fix db reconnect issue
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 19 Sep 2020 16:25:00 +0100
+
 power-meter (16) xenial; urgency=medium
 
   * Add influx client
