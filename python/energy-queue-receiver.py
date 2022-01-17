@@ -54,6 +54,9 @@ def receive_loop(mq_name, serial_numbers=None, ip4_numbers=None):
 		except posix_ipc.BusyError:
 			log.error("queue full writing {0}".format(" ".join(message)))
 			systemd.daemon.notify("STATUS=Reading at {0}: ".format(reading.ts) + ", ".join(message[1:]) + " QUEUE FULL")
+		except Exception:
+			log.exception("queue error writing {0}".format(" ".join(message)))
+			systemd.daemon.notify("STATUS=Reading at {0}: ".format(reading.ts) + ", ".join(message[1:]) + " QUEUE ERROR")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Power Meter energy queue receiver")
