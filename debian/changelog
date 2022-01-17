@@ -1,3 +1,9 @@
+power-meter (18) bionic; urgency=medium
+
+  * Use 64-bit instead of 32-bit width types for queue data
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Mon, 17 Jan 2022 20:28:28 +0000
+
 power-meter (17) bionic; urgency=medium
 
   * Fix db reconnect issue
