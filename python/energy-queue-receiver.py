@@ -28,7 +28,7 @@ import systemd.daemon
 log = logging.getLogger("readings")
 
 def receive_loop(mq_name, serial_numbers=None, ip4_numbers=None):
-	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192//100, max_message_size=4+4+4, read=False)
+	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192//100, max_message_size=8+8+8, read=False)
 	meter = powermeter.PowerMeter(serial_numbers, ip4_numbers)
 	last = None
 

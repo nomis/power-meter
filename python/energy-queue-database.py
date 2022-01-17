@@ -102,7 +102,7 @@ def database_insert(meter, dsn, ts, active_energy, reactive_energy):
 		raise
 
 def receive_loop(mq_name, dsn, meter):
-	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192, max_message_size=4+4+4, write=False)
+	queue = posix_ipc.MessageQueue(mq_name, flags=posix_ipc.O_CREAT, max_messages=8192, max_message_size=8+8+8, write=False)
 
 	systemd.daemon.notify("READY=1")
 
