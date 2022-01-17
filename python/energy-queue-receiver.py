@@ -41,10 +41,10 @@ def receive_loop(mq_name, serial_numbers=None, ip4_numbers=None):
 		last = current
 
 		ts = int(reading.ts.timestamp())
-		data = struct.pack("=If", ts, reading.activeEnergy)
+		data = struct.pack("=Qd", ts, reading.activeEnergy)
 		message = [str(ts), str(reading.activeEnergy)]
 		if reading.reactiveEnergy is not None:
-			data += struct.pack("=f", reading.reactiveEnergy)
+			data += struct.pack("=d", reading.reactiveEnergy)
 			message += [str(reading.reactiveEnergy)]
 
 		try:

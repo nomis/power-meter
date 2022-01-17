@@ -109,10 +109,10 @@ def receive_loop(mq_name, dsn, meter):
 	while True:
 		(data, priority) = queue.receive()
 
-		if len(data) >= 12:
-			(ts, active_energy, reactive_energy) = struct.unpack("=Iff", data)
-		elif len(data) >= 8:
-			(ts, active_energy) = struct.unpack("=If", data)
+		if len(data) >= 24:
+			(ts, active_energy, reactive_energy) = struct.unpack("=Qdd", data)
+		elif len(data) >= 16:
+			(ts, active_energy) = struct.unpack("=Qd", data)
 			reactiveEnergy = None
 		else:
 			continue
