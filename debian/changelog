@@ -1,3 +1,9 @@
+power-meter (20) bionic; urgency=medium
+
+  * log unknown exceptions writing to the queue
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Mon, 17 Jan 2022 20:45:28 +0000
+
 power-meter (19) bionic; urgency=medium
 
   * Fix queue maximum message size
