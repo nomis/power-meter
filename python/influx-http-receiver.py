@@ -52,7 +52,7 @@ class InfluxHTTP:
 			name = {
 				"voltage": "voltage:V",
 				"frequency": "frequency:Hz",
-				"temperature": "celsius",
+				"temperature": "temperature:celsius",
 				"current": "current:A",
 				"activePower": "activePower:W",
 				"reactivePower": "reactivePower:W",

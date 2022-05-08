@@ -61,7 +61,7 @@ class InfluxDB:
 			name = {
 				"voltage": "voltage:V",
 				"frequency": "frequency:Hz",
-				"temperature": "celsius",
+				"temperature": "temperature:celsius",
 				"current": "current:A",
 				"activePower": "apparentPower:W",
 				"reactivePower": "reactivePower:W",
