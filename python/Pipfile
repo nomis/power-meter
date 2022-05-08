@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 pycryptodome = "*"
 pyyaml = "*"
+systemd = "*"
+pytz = "*"
+tzlocal = "*"
 
 [dev-packages]
 

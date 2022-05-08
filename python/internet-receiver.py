@@ -78,7 +78,7 @@ def receive_loop(port, interface, meter):
 				+ struct.pack("@i", socket.if_nametoindex(interface)))
 			output.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, mcast_if)
 
-			systemd.daemon.notify("READY=1")
+			systemd.daemon.notify(systemd.daemon.Notification.READY)
 
 			while True:
 				(data, sender) = input.recvfrom(1480)
@@ -167,7 +167,7 @@ def receive_loop(port, interface, meter):
 				else:
 					status = "Receive time sync request"
 				log.debug(" == ".join((repr(sender), status)))
-				systemd.daemon.notify(f"STATUS={status}")
+				systemd.daemon.notify(systemd.daemon.Notification.STATUS, status)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Power Meter receiver")
