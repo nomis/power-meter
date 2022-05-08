@@ -150,7 +150,7 @@ def receive_loop(port, interface, meter):
 						del reading_copy["timestamp"]
 						del reading_copy["rtt"]
 						data = {
-							"meter": { "model": "RI-D19-80-C", "serialNumber": meter, "reading": reading },
+							"meter": { "model": "RI-D19-80-C", "serialNumber": meter, "reading": reading_copy },
 							"timestamp": reading["timestamp"],
 						}
 						output.sendto(yaml.dump(data).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
