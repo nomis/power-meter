@@ -71,7 +71,7 @@ class PowerMeter:
 							ts = data.get("timestamp")
 							if ts:
 								ts = pytz.utc.localize(datetime.utcfromtimestamp(ts))
-							yield Reading(serial_number, data["meter"]["reading"], ts)
+							yield Reading(serial_number, data["meter"]["reading"], ts, data.get("uptime"), data.get("rtt"))
 			except BlockingIOError:
 				yield None
 
@@ -90,13 +90,15 @@ _Reading__fields = OrderedDict([
 ])
 
 class Reading:
-	def __init__(self, serial_number, data, timestamp=None):
+	def __init__(self, serial_number, data, timestamp=None, uptime=None, rtt=None):
 		self.serialNumber = serial_number
 		self._data = data
 		if timestamp:
 			self.ts = timestamp
 		else:
 			self.ts = pytz.utc.localize(datetime.utcnow())
+		self.uptime = uptime
+		self.rtt = rtt
 
 	def __getattr__(self, key):
 		if key in __fields:

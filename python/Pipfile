@@ -9,6 +9,7 @@ pyyaml = "*"
 systemd = "*"
 pytz = "*"
 tzlocal = "*"
+influx-client = "*"
 
 [dev-packages]
 
