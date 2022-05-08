@@ -156,8 +156,9 @@ def receive_loop(port, interface, meter):
 							"meter": { "model": "RI-D19-80-C", "serialNumber": meter, "reading": reading_copy },
 							"timestamp": reading["timestamp"],
 							"uptime": reading["uptime"],
-							"rtt": reading["rtt"],
 						}
+						if reading["rtt"]:
+							data["rtt"] = reading["rtt"]
 						output.sendto(yaml.dump(data, default_flow_style=True).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
 
 				seen_timestamps = list(sorted(set(timestamps) | set(seen_timestamps)))[-60:]
