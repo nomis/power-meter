@@ -23,6 +23,7 @@
 
 #include "PowerMeter.hpp"
 #include "ModbusMaster.h"
+#include "Comms.hpp"
 
 /**
 Rayleigh Instruments RI-D19-80-C
@@ -64,7 +65,7 @@ Registers (values are Big-endian):
 */
 class RI_D19_80_C: public PowerMeter {
 public:
-	RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address);
+	RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address, Comms &comms);
 	virtual ~RI_D19_80_C();
 	void setPassword(uint32_t value);
 	bool writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
@@ -86,6 +87,7 @@ protected:
 	ModbusMaster &modbus;
 	Stream *io;
 	uint8_t address;
+	Comms &comms;
 
 private:
 	bool writeEnergy(uint16_t reg, unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);

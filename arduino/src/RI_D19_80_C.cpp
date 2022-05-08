@@ -17,10 +17,14 @@
  */
 
 #include "RI_D19_80_C.hpp"
-#include "Main.hpp"
 
-RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address)
-	: modbus(modbus), io(io), address(address) {
+#include <sys/time.h>
+
+#include "Main.hpp"
+#include "Comms.hpp"
+
+RI_D19_80_C::RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address, Comms &comms)
+	: modbus(modbus), io(io), address(address), comms(comms) {
 }
 
 RI_D19_80_C::~RI_D19_80_C() {
@@ -74,6 +78,11 @@ bool RI_D19_80_C::readSerialNumber() {
 
 bool RI_D19_80_C::readMeasurements() {
 	uint8_t ret;
+	struct timeval tv;
+
+	if (gettimeofday(&tv, nullptr) != 0) {
+		tv.tv_sec = 0;
+	}
 
 	modbus.begin(address, *io);
 
@@ -97,15 +106,43 @@ bool RI_D19_80_C::readMeasurements() {
 		| (uint32_t)modbus.getResponseBuffer(0x0012), -2);
 	temperature = Decimal((int8_t)modbus.getResponseBuffer(0x0025), 0);
 
+	std::array<uint8_t,23> data;
+
+	data[0] = modbus.getResponseBuffer(0x0000) >> 8;
+	data[1] = modbus.getResponseBuffer(0x0000);
+	data[2] = modbus.getResponseBuffer(0x0001) >> 8;
+	data[3] = modbus.getResponseBuffer(0x0001);
+	data[4] = modbus.getResponseBuffer(0x0002) >> 8;
+	data[5] = modbus.getResponseBuffer(0x0002);
+	data[6] = modbus.getResponseBuffer(0x0003) >> 8;
+	data[7] = modbus.getResponseBuffer(0x0003);
+	data[8] = modbus.getResponseBuffer(0x0004) >> 8;
+	data[9] = modbus.getResponseBuffer(0x0004);
+	data[10] = modbus.getResponseBuffer(0x0005) >> 8;
+	data[11] = modbus.getResponseBuffer(0x0005);
+	data[12] = modbus.getResponseBuffer(0x0006) >> 8;
+	data[13] = modbus.getResponseBuffer(0x0006);
+	data[14] = modbus.getResponseBuffer(0x0007) >> 8;
+	data[15] = modbus.getResponseBuffer(0x0007);
+	data[16] = modbus.getResponseBuffer(0x0008) >> 8;
+	data[17] = modbus.getResponseBuffer(0x0008);
+	data[18] = modbus.getResponseBuffer(0x0011) >> 8;
+	data[19] = modbus.getResponseBuffer(0x0011);
+	data[20] = modbus.getResponseBuffer(0x0012) >> 8;
+	data[21] = modbus.getResponseBuffer(0x0012);
+	data[22] = modbus.getResponseBuffer(0x0025);
+
+	comms.add(tv.tv_sec, data);
+
 	if (debug) {
 		bool first = true;
 
 		// Check if Active Energy (Total) doesn't match Active Energy (T1)
 		if (modbus.getResponseBuffer(0x0007) != modbus.getResponseBuffer(0x0009)
 				|| modbus.getResponseBuffer(0x0008) != modbus.getResponseBuffer(0x000A)) {
-			output->print(first ? "# " : "; ");
+			output->print(first ? F("# ") : F("; "));
 			first = false;
-			output->print("0x0007..0x000A = ");
+			output->print(F("0x0007..0x000A = "));
 			for (uint8_t i = 0x0007; i <= 0x000A; i++) {
 				if (i > 0x0007) {
 					output->print(" ");
@@ -125,9 +162,9 @@ bool RI_D19_80_C::readMeasurements() {
 		}
 
 		if (!all_zeros) {
-			output->print(first ? "# " : "; ");
+			output->print(first ? F("# ") : F("; "));
 			first = false;
-			output->print("0x000B..0x0020 = ");
+			output->print(F("0x000B..0x0020 = "));
 			for (uint8_t i = zero_start; i <= zero_end; i++) {
 				if (i > zero_start) {
 					output->print(" ");
@@ -141,21 +178,21 @@ bool RI_D19_80_C::readMeasurements() {
 		// (this is probably a software version)
 		uint8_t unknown = modbus.getResponseBuffer(0x0026);
 		if (unknown != 0xF6 && unknown != 0xFB) {
-			output->print(first ? "# " : "; ");
+			output->print(first ? F("# ") : F("; "));
 			first = false;
-			output->print("0x0026 = 0x");
+			output->print(F("0x0026 = 0x"));
 			output->print(modbus.getResponseBuffer(0x0026), HEX);
 		}
 
 		ret = modbus.readHoldingRegisters(0x002E, 2);
 		if (ret == ModbusMaster::ku8MBSuccess) {
-			output->print(first ? "# " : "; ");
+			output->print(first ? F("# ") : F("; "));
 			first = false;
-			output->print("0x002E..0x002F = ");
+			output->print(F("0x002E..0x002F = "));
 
 			for (uint8_t i = 0; i <= 1; i++) {
 				if (i > 0) {
-					output->print(" ");
+					output->print(' ');
 				}
 
 				output->print(modbus.getResponseBuffer(i), HEX);

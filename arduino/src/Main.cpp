@@ -19,12 +19,13 @@
 #include <ModbusMaster.h>
 
 #include "Main.hpp"
-#include "Settings.hpp"
 #include "EthernetNetwork.hpp"
 #include "RI_D19_80_C.hpp"
+#include "Comms.hpp"
 
 ModbusMaster modbus;
-RI_D19_80_C meter(modbus, input, METER_ADDRESS);
+Comms comms;
+RI_D19_80_C meter(modbus, input, METER_ADDRESS, comms);
 
 static void enableTx() {
 	digitalWrite(RE_PIN, HIGH);
@@ -39,23 +40,23 @@ static void disableTx() {
 }
 
 static void logTransmit(const uint8_t *data, size_t length) {
-	output->print("# TX");
+	output->print(F("# TX"));
 	for (size_t i = 0; i < length; i++) {
-		output->print(" ");
+		output->print(' ');
 		output->print(data[i], HEX);
 	}
 	output->println();
 }
 
 static void logReceive(const uint8_t *data, size_t length, uint8_t status) {
-	output->print("# RX");
+	output->print(F("# RX"));
 	for (size_t i = 0; i < length; i++) {
-		output->print(" ");
+		output->print(' ');
 		output->print(data[i], HEX);
 	}
-	output->print(" (");
+	output->print(F(" ("));
 	output->print(status, HEX);
-	output->println(")");
+	output->println(')');
 }
 
 static void indicateStatus(bool success) {
@@ -93,52 +94,54 @@ void setup() {
 #endif
 
 #ifdef POWER_METER_HAS_NETWORK
-	Settings::init();
+	ethernetNetwork.setConfigurationMode(false);
 #endif
 }
 
 void loop() {
-	unsigned long start = millis();
+	static unsigned long last_millis = millis() - 1000;
+	unsigned long now = millis();
+	static struct timeval last_tv = { 0, 0 };
+	struct timeval tv;
 
-	if (*output) {
-		if (meter.read()) {
-			output->println(meter);
-			indicateStatus(true);
-#ifdef POWER_METER_HAS_NETWORK
-			if (ethernetNetwork) {
-				ethernetNetwork.println(meter);
-			}
-
-			ethernetNetwork.loop();
-
-			if (ethernetNetwork.isTimeValid()) {
-				delay(1000 - (ethernetNetwork.ntpMillis() % 1000));
-			} else {
-#endif
-				constexpr unsigned long wait = 500;
-				unsigned long duration = millis() - start;
-				if (duration < wait) {
-					delay(wait - duration);
-				}
-#ifdef POWER_METER_HAS_NETWORK
-			}
-#endif
-		} else {
-			indicateStatus(false);
-			delay(100);
-		}
-	} else {
-		indicateStatus(false);
-
-#ifdef POWER_METER_HAS_NETWORK
-		ethernetNetwork.loop();
-#endif
+	if (gettimeofday(&tv, nullptr) != 0) {
+		tv.tv_sec = 0;
 	}
 
-	if (CONFIGURE_PIN >= 0) {
-#ifdef POWER_METER_HAS_NETWORK
-		ethernetNetwork.setConfigurationMode(digitalRead(CONFIGURE_PIN) == LOW);
-#endif
+	if (tv.tv_sec > 1651955510) {
+		if (tv.tv_sec > last_tv.tv_sec) {
+			output->print(F("# Read "));
+			output->print(tv.tv_sec);
+			output->print(' ');
+			output->print(tv.tv_usec);
+			output->print(F(" ["));
+
+			unsigned long start = micros();
+			bool ok = meter.read();
+			output->print(micros() - start);
+			output->println(']');
+
+			if (ok) {
+				output->println(meter);
+				indicateStatus(true);
+			}
+
+			if (ethernetNetwork) {
+				comms.transmit();
+				last_millis = now;
+			}
+
+			last_tv.tv_sec = tv.tv_sec;
+		}
+	} else if (now - last_millis >= 1000) {
+		if (ethernetNetwork) {
+			comms.transmit();
+			last_millis = now;
+		}
+	}
+
+	if (ethernetNetwork) {
+		comms.receive();
 	}
 }
 

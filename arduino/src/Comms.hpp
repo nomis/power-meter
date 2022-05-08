@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2022  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,42 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef POWER_METER_ETHERNETNETWORK_HPP
-#define POWER_METER_ETHERNETNETWORK_HPP
+#ifndef POWER_METER_COMMS_HPP
+#define POWER_METER_COMMS_HPP
 
 #include <Arduino.h>
-#include "Main.hpp"
-
-#ifdef POWER_METER_HAS_NETWORK
 #include <WiFiUdp.h>
+#include <aes.hpp>
+#include <sha/sha256.h>
 
-class EthernetNetwork {
-public:
-	EthernetNetwork();
-	virtual ~EthernetNetwork();
-	void setConfigurationMode(bool configure);
-	operator bool() const;
+#include <array>
+#include <list>
 
-protected:
-	enum class Mode {
-		DISABLED,
-		CONFIGURE,
-		RUNNING
-	};
-
-	void configureNetwork();
-	void sendPacket();
-
-	// Elementary charge is about 1.60217×10⁻¹⁹ coulombs
-	static constexpr uint16_t PORT = 16021;
-
-	static constexpr const char *HOSTNAME = "ESP8266-PowerMeter-%08x";
-	static constexpr const char *SSID = "🔌 %08x";
-
-	Mode mode = Mode::DISABLED;
+struct Data {
+	uint32_t timestamp;
+	uint8_t data[23];
+	uint8_t padding[1];
+	uint32_t rtt;
 };
 
-extern EthernetNetwork ethernetNetwork;
-#endif
+class Comms {
+public:
+	Comms();
+	void add(uint32_t timestamp, const std::array<uint8_t,23> &data);
+	void transmit();
+	void receive();
+
+private:
+	static constexpr size_t MAX_DATA = 38;
+
+	WiFiUDP udp;
+	uint8_t enc_key_[AES_KEYLEN] = { 0 };
+	uint8_t mac_key_[SHA256_HASH_LEN] = { 0 };
+	std::list<Data> data_;
+	std::array<uint32_t,AES_BLOCKLEN / 4> token_;
+	unsigned long tx_micros_ = 0;
+	bool sync_time_ = false;
+	unsigned long rtt_us_ = 0;
+};
 
 #endif

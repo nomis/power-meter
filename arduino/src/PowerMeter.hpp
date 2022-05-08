@@ -54,7 +54,7 @@ protected:
 	Decimal reactiveEnergy; ///< kW·h
 
 private:
-	static size_t printReading(Print &p, bool &first, const char *name, const Decimal &value) __attribute__((warn_unused_result));
+	static size_t printReading(Print &p, bool &first, const __FlashStringHelper *name, const Decimal &value) __attribute__((warn_unused_result));
 };
 
 #endif

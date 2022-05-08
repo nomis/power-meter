@@ -57,37 +57,37 @@ size_t PowerMeter::printTo(Print &p) const {
 	size_t n = 0;
 	bool first = true;
 
-	n += p.print("meter: {model: \"");
+	n += p.print(F("meter: {model: \""));
 	n += p.print(model());
-	n += p.print("\"");
+	n += p.print('\"');
 
 	if (serialNumber.length() > 0) {
-		n += p.print(",serialNumber: \"");
+		n += p.print(F(",serialNumber: \""));
 		n += p.print(serialNumber);
-		n += p.print("\"");
+		n += p.print('\"');
 	}
 
-	n += p.print(",reading: {");
+	n += p.print(F(",reading: {"));
 
-	n += printReading(p, first, "voltage", voltage);
-	n += printReading(p, first, "current", current);
-	n += printReading(p, first, "frequency", frequency);
-	n += printReading(p, first, "activePower", activePower);
-	n += printReading(p, first, "reactivePower", reactivePower);
-	n += printReading(p, first, "apparentPower", apparentPower);
-	n += printReading(p, first, "powerFactor", powerFactor);
+	n += printReading(p, first, F("voltage"), voltage);
+	n += printReading(p, first, F("current"), current);
+	n += printReading(p, first, F("frequency"), frequency);
+	n += printReading(p, first, F("activePower"), activePower);
+	n += printReading(p, first, F("reactivePower"), reactivePower);
+	n += printReading(p, first, F("apparentPower"), apparentPower);
+	n += printReading(p, first, F("powerFactor"), powerFactor);
 
-	n += printReading(p, first, "temperature", temperature);
+	n += printReading(p, first, F("temperature"), temperature);
 
-	n += printReading(p, first, "activeEnergy", activeEnergy);
-	n += printReading(p, first, "reactiveEnergy", reactiveEnergy);
+	n += printReading(p, first, F("activeEnergy"), activeEnergy);
+	n += printReading(p, first, F("reactiveEnergy"), reactiveEnergy);
 
-	n += p.print("}}");
+	n += p.print(F("}}"));
 
 	return n;
 }
 
-size_t PowerMeter::printReading(Print &p, bool &first, const char *name, const Decimal &value) {
+size_t PowerMeter::printReading(Print &p, bool &first, const __FlashStringHelper *name, const Decimal &value) {
 	size_t n = 0;
 
 	if (value.hasValue()) {
@@ -98,7 +98,7 @@ size_t PowerMeter::printReading(Print &p, bool &first, const char *name, const D
 		}
 
 		n += p.print(name);
-		n += p.print(": ");
+		n += p.print(F(": "));
 		n += p.print(value);
 	}
 
