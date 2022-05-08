@@ -37,7 +37,7 @@ class InfluxHTTP:
 		self.db = db
 		self.key = key
 		self.location = location
-		self.fields = set(["voltage", "frequency", "temperature", "current", "activePower", "reactivePower", "apparentPower", "powerFactor"])
+		self.fields = set(["voltage", "frequency", "temperature", "current", "activePower", "reactivePower", "apparentPower", "powerFactor", "activeEnergy", "reactiveEnergy"])
 		self.interval = interval
 		self.serial_number = serial_number
 
@@ -54,10 +54,12 @@ class InfluxHTTP:
 				"frequency": "frequency:Hz",
 				"temperature": "celsius",
 				"current": "current:A",
-				"activePower": "power:kWh",
-				"reactivePower": "power:kWh",
-				"apparentPower": "power:kWh",
-				"powerFactor": "power-factor:percent"
+				"activePower": "activePower:W",
+				"reactivePower": "reactivePower:W",
+				"apparentPower": "apparentPower:W",
+				"powerFactor": "power-factor:percent",
+				"activeEnergy": "activeEnergy:kWh",
+				"reactiveEnergy": "reactiveEnergy:kWh",
 			}[field]
 			data[name] = reading[field]
 

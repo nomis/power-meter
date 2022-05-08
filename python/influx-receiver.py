@@ -35,7 +35,7 @@ udp.connect(("127.0.0.1", 8089))
 class InfluxDB:
 	def __init__(self, location, fields, interval, serial_number):
 		self.location = location
-		self.fields = set(fields) & set(["voltage", "frequency", "temperature", "current", "activePower", "reactivePower", "apparentPower", "powerFactor"])
+		self.fields = set(fields) & set(["voltage", "frequency", "temperature", "current", "activePower", "reactivePower", "apparentPower", "powerFactor", "activeEnergy", "reactiveEnergy"])
 		self.interval = interval
 		self.serial_number = serial_number
 
@@ -51,20 +51,24 @@ class InfluxDB:
 				"frequency": "electricity:supply,traits=metric:gauge",
 				"temperature": "temperature,traits=metric:gauge,sensor=external:power-meter",
 				"current": "electricity:load,traits=metric:gauge",
-				"activePower": "electricity:meter,traits=metric:counter",
-				"reactivePower": "electricity:meter,traits=metric:counter",
-				"apparentPower": "electricity:meter,traits=metric:counter",
-				"powerFactor": "electricity:load,traits=metric:gauge"
+				"activePower": "electricity:load,traits=metric:gauge",
+				"reactivePower": "electricity:load,traits=metric:gauge",
+				"apparentPower": "electricity:load,traits=metric:gauge",
+				"powerFactor": "electricity:load,traits=metric:gauge",
+				"activeEnergy": "electricity:meter,traits=metric:counter",
+				"reactiveEnergy": "electricity:meter,traits=metric:counter",
 			}[field] + ",host=" + hostname + ",location=" + self.location + ",power-meter:serial_number=" + self.serial_number
 			name = {
 				"voltage": "voltage:V",
 				"frequency": "frequency:Hz",
 				"temperature": "celsius",
 				"current": "current:A",
-				"activePower": "power:kWh",
-				"reactivePower": "power:kWh",
-				"apparentPower": "power:kWh",
-				"powerFactor": "power-factor:percent"
+				"activePower": "apparentPower:W",
+				"reactivePower": "reactivePower:W",
+				"apparentPower": "apparentPower:W",
+				"powerFactor": "power-factor:percent",
+				"activeEnergy": "activeEnergy:kWh",
+				"reactiveEnergy": "reactiveEnergy:kWh",
 			}[field]
 			if reading[field] is not None:
 				data += "{0} {1}={2} {3}000000000\n".format(key, name, reading[field], now)
