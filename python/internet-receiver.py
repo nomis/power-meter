@@ -158,7 +158,7 @@ def receive_loop(port, interface, meter):
 							"uptime": reading["uptime"],
 							"rtt": reading["rtt"],
 						}
-						output.sendto(yaml.dump(data).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
+						output.sendto(yaml.dump(data, default_flow_style=True).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
 
 				seen_timestamps = list(sorted(set(timestamps) | set(seen_timestamps)))[-60:]
 
