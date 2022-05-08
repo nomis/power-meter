@@ -42,7 +42,7 @@ public:
 	void receive();
 
 private:
-	static constexpr size_t MAX_DATA = 38;
+	static constexpr size_t MAX_DATA = 40;
 
 	WiFiUDP udp;
 	uint8_t enc_key_[AES_KEYLEN] = { 0 };
