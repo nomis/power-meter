@@ -18,7 +18,7 @@
 
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-from datetime import timedelta
+from datetime import datetime, timedelta
 import argparse
 import hmac
 import logging
@@ -164,9 +164,9 @@ def receive_loop(port, interface, meter):
 				seen_timestamps = list(sorted(set(timestamps) | set(seen_timestamps)))[-60:]
 
 				if readings:
-					status = f"Received {len(timestamps)} with delay {(time.time() - readings[-1]['timestamp']) * 1000:.1f}ms (uptime {[str(timedelta(seconds=reading['uptime'])) for reading in readings]}; rtt {[reading['rtt'] for reading in readings]})"
+					status = f"{str(datetime.today())}: Received {len(timestamps)} with delay {(time.time() - readings[-1]['timestamp']) * 1000:.1f}ms (uptime {[str(timedelta(seconds=reading['uptime'])) for reading in readings]}; rtt {[reading['rtt'] for reading in readings]})"
 				else:
-					status = "Receive time sync request"
+					status = f"{str(datetime.today())}: Receive time sync request"
 				log.debug(" == ".join((repr(sender), status)))
 				systemd.daemon.notify(systemd.daemon.Notification.STATUS, status)
 
