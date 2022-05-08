@@ -57,9 +57,16 @@ void Comms::add(uint32_t timestamp, const std::array<uint8_t,23> &data) {
 	if (timestamp > 1651955510) {
 		value.timestamp = htonl(timestamp);
 		memcpy(value.data, data.data(), sizeof(value.data));
-		value.rtt = htonl(rtt_us_);
+		uint32_t uptime_s = uuid::get_uptime_ms() / 1000;
+		value.uptime_s[0] = uptime_s >> 16;
+		value.uptime_s[1] = uptime_s >> 8;
+		value.uptime_s[2] = uptime_s;
+		rtt_us_ /= 16;
+		if (rtt_us_ > UINT16_MAX) {
+			rtt_us_ = 0;
+		}
+		value.rtt_16us = htons(rtt_us_);
 		rtt_us_ = 0;
-		memset(value.padding, 0, sizeof(value.padding));
 
 		if (data_.size() == MAX_DATA) {
 			data_.pop_front();

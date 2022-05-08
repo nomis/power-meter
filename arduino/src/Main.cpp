@@ -18,6 +18,8 @@
 
 #include <ModbusMaster.h>
 
+#include <uuid/common.h>
+
 #include "Main.hpp"
 #include "EthernetNetwork.hpp"
 #include "RI_D19_80_C.hpp"
@@ -103,6 +105,8 @@ void loop() {
 	unsigned long now = millis();
 	static struct timeval last_tv = { 0, 0 };
 	struct timeval tv;
+
+	uuid::loop();
 
 	if (gettimeofday(&tv, nullptr) != 0) {
 		tv.tv_sec = 0;

@@ -18,6 +18,7 @@
 
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
+from datetime import timedelta
 import argparse
 import hmac
 import logging
@@ -36,7 +37,7 @@ DATA_LEN = AES_BLOCKLEN * 2
 log = logging.getLogger("readings")
 
 def parse(data):
-	reading = struct.unpack("!LHHHHHHhLLbxL", data)
+	reading = struct.unpack("!LHHHHHHhLLbBHH", data)
 
 	return {
 		"timestamp": reading[0],
@@ -50,7 +51,8 @@ def parse(data):
 		"activeEnergy": reading[8] / 100,
 		"reactiveEnergy": reading[9] / 100,
 		"temperature": reading[10],
-		"rtt": reading[11] / 1000,
+		"uptime": (reading[11] << 16) | reading[12],
+		"rtt": reading[13] * 16 / 1000,
 	}
 
 def receive_loop(port, interface, meter):
@@ -149,16 +151,19 @@ def receive_loop(port, interface, meter):
 						reading_copy = reading.copy()
 						del reading_copy["timestamp"]
 						del reading_copy["rtt"]
+						del reading_copy["uptime"]
 						data = {
 							"meter": { "model": "RI-D19-80-C", "serialNumber": meter, "reading": reading_copy },
 							"timestamp": reading["timestamp"],
+							"uptime": reading["uptime"],
+							"rtt": reading["rtt"],
 						}
 						output.sendto(yaml.dump(data).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
 
 				seen_timestamps = list(sorted(set(timestamps) | set(seen_timestamps)))[-60:]
 
 				if readings:
-					status = f"Received {len(timestamps)} with delay {(time.time() - readings[-1]['timestamp']) * 1000:.1f}ms (rtt {[reading['rtt'] for reading in readings]})"
+					status = f"Received {len(timestamps)} with delay {(time.time() - readings[-1]['timestamp']) * 1000:.1f}ms (uptime {[str(timedelta(seconds=reading['uptime'])) for reading in readings]}; rtt {[reading['rtt'] for reading in readings]})"
 				else:
 					status = "Receive time sync request"
 				log.debug(" == ".join((repr(sender), status)))

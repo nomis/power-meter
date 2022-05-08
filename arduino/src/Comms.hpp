@@ -30,8 +30,8 @@
 struct Data {
 	uint32_t timestamp;
 	uint8_t data[23];
-	uint8_t padding[1];
-	uint32_t rtt;
+	uint8_t uptime_s[3];
+	uint16_t rtt_16us;
 };
 
 class Comms {
