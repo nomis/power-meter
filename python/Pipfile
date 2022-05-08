@@ -10,6 +10,7 @@ systemd = "*"
 pytz = "*"
 tzlocal = "*"
 influx-client = "*"
+rrdtool = "*"
 
 [dev-packages]
 

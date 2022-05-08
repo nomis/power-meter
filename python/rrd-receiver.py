@@ -74,7 +74,7 @@ class RRD:
 	def update(self, reading):
 		__update(self.filename_supply, reading, ["voltage", "frequency", "temperature"])
 		__update(self.filename_load, reading, ["current", "activePower", "reactivePower", "apparentPower", "powerFactor"])
-		systemd.daemon.notify("STATUS=Updated reading at " + str(reading.ts))
+		systemd.daemon.notify(systemd.daemon.Notification.STATUS, "Updated reading at " + str(reading.ts))
 
 def _RRD__update(filename, reading, fields):
 	template = ":".join(fields)
@@ -90,7 +90,7 @@ def _RRD__update(filename, reading, fields):
 		for line in traceback.format_exc().split("\n"):
 			log.error(line)
 
-		systemd.daemon.notify("STATUS=Update ({0}: {1} = {2}) error: {3}".format(filename, template, data, sys.exc_info()[1]))
+		systemd.daemon.notify(systemd.daemon.Notification.STATUS, "Update ({0}: {1} = {2}) error: {3}".format(filename, template, data, sys.exc_info()[1]))
 		raise
 
 
@@ -98,7 +98,7 @@ def receive_loop(output_directory, serial_numbers=None, ip4_numbers=None):
 	meter = powermeter.PowerMeter(serial_numbers, ip4_numbers)
 	rrds = {}
 
-	systemd.daemon.notify("READY=1")
+	systemd.daemon.notify(systemd.daemon.Notification.READY)
 
 	for reading in meter.readings:
 		if reading.serialNumber not in rrds:
