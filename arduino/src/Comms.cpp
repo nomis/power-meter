@@ -136,6 +136,7 @@ void Comms::transmit() {
 
 			if (len == SHA256_HASH_LEN) {
 				tx_micros_ = micros();
+				token_valid_ = true;
 				sync_time_ = true;
 			}
 		}
@@ -206,11 +207,12 @@ void Comms::receive() {
 	AES_CBC_decrypt_buffer(&ctx, buffer.data(), data_len);
 
 	uint16_t pos = AES_BLOCKLEN;
-	bool valid_token = !memcmp(&buffer[pos], token_.data(), AES_BLOCKLEN);
+	bool valid_token = token_valid_ && !memcmp(&buffer[pos], token_.data(), AES_BLOCKLEN);
 	pos += AES_BLOCKLEN;
 
 	if (valid_token) {
 		rtt_us_ = rx_micros - tx_micros_;
+		token_valid_ = false;
 	}
 
 	if (valid_token && sync_time_) {
@@ -263,7 +265,7 @@ void Comms::receive() {
 		sync_time_ = false;
 	}
 
-	if (rtt_us_) {
+	if (valid_token) {
 		output->print(F(" <"));
 		output->print(rtt_us_);
 		output->print('>');

@@ -52,6 +52,7 @@ private:
 	std::list<Data> data_;
 	std::array<uint32_t,AES_BLOCKLEN / 4> token_;
 	unsigned long tx_micros_ = 0;
+	bool token_valid_ = false;
 	bool sync_time_ = false;
 	unsigned long rtt_us_ = 0;
 };
