@@ -157,12 +157,15 @@ void Comms::receive() {
 		tv.tv_sec = 0;
 	}
 
+	/* timeout for syncing time */
 	if (tv.tv_sec > MIN_TIME) {
-		if (rx_micros - tx_micros_ >= 1000000) {
+		/* 100ms if already set */
+		if (rx_micros - tx_micros_ >= 100000) {
 			sync_time_ = false;
 		}
 	} else {
-		if (rx_micros - tx_micros_ >= 100000) {
+		/* 1s if not set */
+		if (rx_micros - tx_micros_ >= 1000000) {
 			sync_time_ = false;
 		}
 	}
