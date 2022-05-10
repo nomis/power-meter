@@ -137,7 +137,7 @@ void EthernetNetwork::configureNetwork() {
 
 	if (mode == Mode::CONFIGURE) {
 		char ssid[WL_SSID_MAX_LENGTH + 1];
-		uint8_t mode = 0;
+		//uint8_t mode = 0;
 
 		if (staEnabled) {
 			output->println("# Disconnecting WiFi STA");
@@ -152,7 +152,7 @@ void EthernetNetwork::configureNetwork() {
 		WiFi.softAP(ssid);
 		apEnabled = true;
 
-		wifi_softap_set_dhcps_offer_option(OFFER_ROUTER, &mode);
+		//wifi_softap_set_dhcps_offer_option(OFFER_ROUTER, &mode);
 	} else {
 		if (apEnabled) {
 			output->println("# Disabling WiFi AP");
