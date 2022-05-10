@@ -105,7 +105,14 @@ def receive_loop(port, interface, meter):
 
 				log.debug(" <- ".join((repr(sender), data.hex())))
 
-				pos = AES_BLOCKLEN * 2
+				pos = AES_BLOCKLEN
+				token = data[pos:pos + AES_BLOCKLEN]
+				pos += AES_BLOCKLEN
+				if token[0] & 0x80 != 0:
+					# Server message
+					continue
+				token = bytes([token[0] | 0x80]) + token[1:]
+
 				timestamps = []
 				readings = []
 				if (data_len - pos) % DATA_LEN != 0:
@@ -130,7 +137,7 @@ def receive_loop(port, interface, meter):
 						# Out of date
 						continue
 
-				resp = get_random_bytes(AES_BLOCKLEN) + data[AES_BLOCKLEN:2 * AES_BLOCKLEN]
+				resp = get_random_bytes(AES_BLOCKLEN) + token
 				now = time.time()
 				resp += struct.pack("!LL", int(now), int((now % 1) * 1000000))
 				for timestamp in timestamps:

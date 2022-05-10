@@ -24,7 +24,6 @@
 #include <aes.hpp>
 #include <sha/sha256.h>
 
-#include <array>
 #include <list>
 
 struct Data {
@@ -32,6 +31,11 @@ struct Data {
 	uint8_t data[23];
 	uint8_t uptime_s[3];
 	uint16_t rtt_16us;
+};
+
+union Token {
+	uint8_t token8[AES_BLOCKLEN];
+	uint32_t token32[AES_BLOCKLEN / 4];
 };
 
 constexpr unsigned long MIN_TIME = 1651955510;
@@ -50,7 +54,7 @@ private:
 	uint8_t enc_key_[AES_KEYLEN] = { 0 };
 	uint8_t mac_key_[SHA256_HASH_LEN] = { 0 };
 	std::list<Data> data_;
-	std::array<uint32_t,AES_BLOCKLEN / 4> token_;
+	Token token_;
 	unsigned long tx_micros_ = 0;
 	bool token_valid_ = false;
 	bool sync_time_ = false;

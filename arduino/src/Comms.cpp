@@ -46,7 +46,7 @@ Comms::Comms() {
 		mac_key_[i / 2] = value;
 	}
 
-	token_.fill(0);
+	memset(&token_, 0, sizeof(token_));
 
 	udp.begin(16021);
 }
@@ -99,14 +99,15 @@ void Comms::transmit() {
 	static_assert(sizeof(Data) % AES_BLOCKLEN == 0);
 	std::vector<uint8_t> buffer(AES_BLOCKLEN + AES_BLOCKLEN + data_.size() * sizeof(Data));
 
-	for (uint8_t i = 0; i < token_.size(); i++) {
-		token_[i] = RANDOM_REG32;
+	for (uint8_t i = 0; i < sizeof(token_.token32) / sizeof(token_.token32[0]); i++) {
+		token_.token32[i] = RANDOM_REG32;
 	}
+	token_.token8[0] &= ~0x80; /* client */
 
 	uint16_t pos = 0;
 	memcpy(&buffer[pos], padding.padding8, sizeof(padding.padding8));
 	pos += sizeof(padding.padding8);
-	memcpy(&buffer[pos], token_.data(), AES_BLOCKLEN);
+	memcpy(&buffer[pos], token_.token8, sizeof(token_.token8));
 	pos += AES_BLOCKLEN;
 
 	for (const auto &value : data_) {
@@ -136,6 +137,7 @@ void Comms::transmit() {
 
 			if (len == SHA256_HASH_LEN) {
 				tx_micros_ = micros();
+				token_.token8[0] |= 0x80; /* server: easier to memcmp later */
 				token_valid_ = true;
 				sync_time_ = true;
 			}
@@ -210,15 +212,15 @@ void Comms::receive() {
 	AES_CBC_decrypt_buffer(&ctx, buffer.data(), data_len);
 
 	uint16_t pos = AES_BLOCKLEN;
-	bool valid_token = token_valid_ && !memcmp(&buffer[pos], token_.data(), AES_BLOCKLEN);
+	bool token_match = token_valid_ && !memcmp(&buffer[pos], &token_, sizeof(token_));
 	pos += AES_BLOCKLEN;
 
-	if (valid_token) {
+	if (token_match) {
 		rtt_us_ = rx_micros - tx_micros_;
 		token_valid_ = false;
 	}
 
-	if (valid_token && sync_time_) {
+	if (token_match && sync_time_) {
 		uint32_t remote_time_s = ntohl(*(uint32_t*)&buffer[pos]);
 		pos += 4;
 		uint32_t remote_time_us = ntohl(*(uint32_t*)&buffer[pos]);
@@ -259,7 +261,7 @@ void Comms::receive() {
 	output->print(micros() - rx_micros);
 	output->print(']');
 
-	if (valid_token && sync_time_) {
+	if (token_match && sync_time_) {
 		output->print(' ');
 		output->print(tv.tv_sec);
 		output->print(' ');
@@ -268,7 +270,7 @@ void Comms::receive() {
 		sync_time_ = false;
 	}
 
-	if (valid_token) {
+	if (token_match) {
 		output->print(F(" <"));
 		output->print(rtt_us_);
 		output->print('>');
