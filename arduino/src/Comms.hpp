@@ -34,6 +34,8 @@ struct Data {
 	uint16_t rtt_16us;
 };
 
+constexpr unsigned long MIN_TIME = 1651955510;
+
 class Comms {
 public:
 	Comms();

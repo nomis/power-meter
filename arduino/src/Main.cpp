@@ -112,7 +112,7 @@ void loop() {
 		tv.tv_sec = 0;
 	}
 
-	if (tv.tv_sec > 1651955510) {
+	if (tv.tv_sec > MIN_TIME) {
 		if (tv.tv_sec > last_tv.tv_sec) {
 			output->print(F("# Read "));
 			output->print(tv.tv_sec);

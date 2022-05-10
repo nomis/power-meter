@@ -54,7 +54,7 @@ Comms::Comms() {
 void Comms::add(uint32_t timestamp, const std::array<uint8_t,23> &data) {
 	Data value;
 
-	if (timestamp > 1651955510) {
+	if (timestamp > MIN_TIME) {
 		value.timestamp = htonl(timestamp);
 		memcpy(value.data, data.data(), sizeof(value.data));
 		uint32_t uptime_s = uuid::get_uptime_ms() / 1000;
@@ -156,7 +156,7 @@ void Comms::receive() {
 		tv.tv_sec = 0;
 	}
 
-	if (tv.tv_sec > 1651955510) {
+	if (tv.tv_sec > MIN_TIME) {
 		if (rx_micros - tx_micros_ >= 1000000) {
 			sync_time_ = false;
 		}
