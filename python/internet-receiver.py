@@ -100,7 +100,7 @@ def receive_loop(port, interface, meter):
 				if not hmac.compare_digest(data[data_len:], hmac.new(mac_key, data[0:data_len], "SHA256").digest()):
 					continue
 
-				aes = AES.new(enc_key, AES.MODE_CBC, b"\x00" * AES_BLOCKLEN)
+				aes = AES.new(enc_key, AES.MODE_CBC)
 				data = aes.decrypt(data[0:data_len])
 
 				log.debug(" <- ".join((repr(sender), data.hex())))
@@ -146,7 +146,7 @@ def receive_loop(port, interface, meter):
 
 				log.debug(" -> ".join((repr(sender), resp.hex())))
 
-				aes = AES.new(enc_key, AES.MODE_CBC)
+				aes = AES.new(enc_key, AES.MODE_CBC, get_random_bytes(AES_BLOCKLEN))
 				resp = aes.encrypt(resp)
 				resp += hmac.new(mac_key, resp, "SHA256").digest()
 
