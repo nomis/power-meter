@@ -212,7 +212,7 @@ void Comms::receive() {
 	AES_CBC_decrypt_buffer(&ctx, buffer.data(), data_len);
 
 	uint16_t pos = AES_BLOCKLEN;
-	bool token_match = token_valid_ && !memcmp(&buffer[pos], &token_, sizeof(token_));
+	bool token_match = token_valid_ && !memcmp(&buffer[pos], &token_.token8, sizeof(token_.token8));
 	pos += AES_BLOCKLEN;
 
 	if (token_match) {
