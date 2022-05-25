@@ -21,7 +21,9 @@ from Crypto.Random import get_random_bytes
 from datetime import datetime, timedelta
 import argparse
 import hmac
+import json
 import logging
+import os
 import socket
 import struct
 import systemd.daemon
@@ -55,7 +57,7 @@ def parse(data):
 		"rtt": reading[13] * 16 / 1000,
 	}
 
-def receive_loop(port, interface, meter):
+def receive_loop(port, interface, meter, json_filename=None):
 	with open("config.yaml", "r") as f:
 		config = yaml.safe_load(f)
 	enc_key = bytes.fromhex(config["enc_key"])
@@ -168,6 +170,12 @@ def receive_loop(port, interface, meter):
 							data["rtt"] = reading["rtt"]
 						output.sendto(yaml.dump(data, default_flow_style=True).encode("ascii"), (powermeter.IP4_GROUP, powermeter.PORT))
 
+						if json_filename is not None:
+							del data["meter"]["serialNumber"]
+							with open(f"{json_filename}~", "w") as f:
+								json.dump(data, f)
+							os.rename(f"{json_filename}~", json_filename)
+
 				seen_timestamps = list(sorted(set(timestamps) | set(seen_timestamps)))[-60:]
 
 				if readings:
@@ -183,8 +191,9 @@ if __name__ == "__main__":
 	parser.add_argument("-p", "--port", type=int, default=16021, help="port")
 	parser.add_argument("-m", "--meter", metavar="SERIAL_NUMBER", type=str, required=True, help="power meter serial number")
 	parser.add_argument("-i", "--interface", metavar="INTERFACE", type=str, required=True, help="network interface to use")
+	parser.add_argument("-j", "--json", metavar="FILENAME", type=str, help="JSON output file")
 	args = parser.parse_args()
 
 	logging.basicConfig(level=args.debug, format="%(asctime)s.%(msecs)03d  %(levelname)5s  %(message)s", datefmt="%F %T")
 
-	receive_loop(args.port, args.interface, args.meter)
+	receive_loop(args.port, args.interface, args.meter, args.json)
