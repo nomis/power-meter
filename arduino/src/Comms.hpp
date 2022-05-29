@@ -38,7 +38,7 @@ union Token {
 	uint32_t token32[AES_BLOCKLEN / 4];
 };
 
-constexpr unsigned long MIN_TIME = 1651955510;
+constexpr time_t MIN_TIME = 1651955510;
 
 class Comms {
 public:
