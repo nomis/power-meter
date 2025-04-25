@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2017,2025  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,18 +69,29 @@ size_t PowerMeter::printTo(Print &p) const {
 
 	n += p.print(",reading: {");
 
-	n += printReading(p, first, "voltage", voltage);
-	n += printReading(p, first, "current", current);
-	n += printReading(p, first, "frequency", frequency);
-	n += printReading(p, first, "activePower", activePower);
-	n += printReading(p, first, "reactivePower", reactivePower);
-	n += printReading(p, first, "apparentPower", apparentPower);
-	n += printReading(p, first, "powerFactor", powerFactor);
+	if (voltage.hasValue())
+		n += printReading(p, first, "voltage", voltage);
+	if (current.hasValue())
+		n += printReading(p, first, "current", current);
+	if (frequency.hasValue())
+		n += printReading(p, first, "frequency", frequency);
+		
+	if (activePower.hasValue())
+		n += printReading(p, first, "activePower", activePower);
+	if (reactivePower.hasValue())
+		n += printReading(p, first, "reactivePower", reactivePower);
+	if (apparentPower.hasValue())
+		n += printReading(p, first, "apparentPower", apparentPower);
+	if (powerFactor.hasValue())
+		n += printReading(p, first, "powerFactor", powerFactor);
 
-	n += printReading(p, first, "temperature", temperature);
+	if (temperature.hasValue())
+		n += printReading(p, first, "temperature", temperature);
 
-	n += printReading(p, first, "activeEnergy", activeEnergy);
-	n += printReading(p, first, "reactiveEnergy", reactiveEnergy);
+	if (activeEnergy.hasValue())
+		n += printReading(p, first, "activeEnergy", activeEnergy);
+	if (reactiveEnergy.hasValue())
+		n += printReading(p, first, "reactiveEnergy", reactiveEnergy);
 
 	n += p.print("}}");
 

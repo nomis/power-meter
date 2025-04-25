@@ -1,0 +1,4 @@
+[env:test]
+extends = env:micro_PZEM_004T_100A
+build_src_flags = ${env:micro_PZEM_004T_100A.build_src_flags}
+	-DFIXED_SERIAL_NUMBER=\"1234567890\"

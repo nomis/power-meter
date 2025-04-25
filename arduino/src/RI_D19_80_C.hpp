@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2017,2025  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ Registers (values are Big-endian):
 class RI_D19_80_C: public PowerMeter {
 public:
 	RI_D19_80_C(ModbusMaster &modbus, Stream *io, uint8_t address);
-	virtual ~RI_D19_80_C();
+	~RI_D19_80_C() override;
 	void setPassword(uint32_t value);
 	bool writeActiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
 	bool writeReactiveEnergy(unsigned int count, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
@@ -76,9 +76,9 @@ public:
 	bool writePassword(uint32_t value);
 
 protected:
-	virtual bool readSerialNumber();
-	virtual bool readMeasurements();
-	virtual String model() const;
+	bool readSerialNumber() override;
+	bool readMeasurements() override;
+	String model() const override;
 
 	static constexpr uint32_t maximumEnergy = 99999999; // daW·h (6+2 record, 5+1 display)
 	static constexpr bool debug = false;

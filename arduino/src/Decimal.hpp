@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2017,2025  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,13 +33,14 @@ public:
 	Decimal(uint32_t coefficient, int8_t exponent);
 	virtual ~Decimal();
 	bool hasValue() const;
+	uint32_t coefficient() const;
 	virtual size_t printTo(Print &p) const __attribute__((warn_unused_result));
 
 private:
-	bool set;
-	uint32_t coefficient;
-	bool coefficientSigned; ///< To be able to store both uint32_t without using int64_t
-	int8_t exponent;
+	bool set_;
+	uint32_t coefficient_;
+	bool coefficientSigned_; ///< To be able to store both uint32_t without using int64_t
+	int8_t exponent_;
 };
 
 #endif

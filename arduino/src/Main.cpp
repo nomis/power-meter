@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2017,2025  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,10 @@
 #include "Settings.hpp"
 #include "EthernetNetwork.hpp"
 #include "RI_D19_80_C.hpp"
+#include "PZEM_004T_100A.hpp"
 
 ModbusMaster modbus;
-RI_D19_80_C meter(modbus, input, METER_ADDRESS);
+POWER_METER_CLASS meter{modbus, input, METER_ADDRESS};
 
 static void enableTx() {
 	digitalWrite(RE_PIN, HIGH);

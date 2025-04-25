@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2017,2025  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "Decimal.hpp"
 
-Decimal::Decimal() : set(false) {
+Decimal::Decimal() : set_(false) {
 
 }
 
@@ -43,12 +43,12 @@ Decimal::Decimal(uint16_t coefficient, int8_t exponent)
 }
 
 Decimal::Decimal(int32_t coefficient, int8_t exponent)
-	: set(true), coefficient((uint32_t)coefficient), coefficientSigned(true), exponent(exponent) {
+	: set_(true), coefficient_((uint32_t)coefficient), coefficientSigned_(true), exponent_(exponent) {
 
 }
 
 Decimal::Decimal(uint32_t coefficient, int8_t exponent)
-	: set(true), coefficient(coefficient), coefficientSigned(false), exponent(exponent) {
+	: set_(true), coefficient_(coefficient), coefficientSigned_(false), exponent_(exponent) {
 
 }
 
@@ -57,23 +57,27 @@ Decimal::~Decimal() {
 }
 
 bool Decimal::hasValue() const {
-	return set;
+	return set_;
+}
+
+uint32_t Decimal::coefficient() const {
+	return coefficient_;
 }
 
 size_t Decimal::printTo(Print &p) const {
 	size_t n = 0;
 
-	if (coefficientSigned) {
-		n += p.print((int32_t)coefficient);
+	if (coefficientSigned_) {
+		n += p.print((int32_t)coefficient_);
 	} else {
-		n += p.print(coefficient);
+		n += p.print(coefficient_);
 	}
 
 	n += p.print(".0");
 
-	if (exponent) {
+	if (exponent_) {
 		n += p.print('e');
-		n += p.print(exponent);
+		n += p.print(exponent_);
 	}
 
 	return n;
