@@ -80,13 +80,13 @@ _Reading__fields = OrderedDict([
 	("voltage", ("V", ".1f")),
 	("current", ("A", ".1f")),
 	("frequency", ("Hz", ".1f")),
-	("activePower", ("W", ".0f")),
-	("reactivePower", ("var", ".0f")),
-	("apparentPower", ("VA", ".0f")),
-	("powerFactor", ("%", ".1f")),
+	("activePower", ("W", ".1f")),
+	("reactivePower", ("var", ".1f")),
+	("apparentPower", ("VA", ".1f")),
+	("powerFactor", ("%", ".2f")),
 	("temperature", ("°C", ".0f")),
-	("activeEnergy", ("kW·h", "09.2f")),
-	("reactiveEnergy", ("kW·h", "09.2f")),
+	("activeEnergy", ("kW·h", "010.3f")),
+	("reactiveEnergy", ("kW·h", "010.3f")),
 ])
 
 class Reading:
@@ -114,8 +114,8 @@ class Reading:
 
 	def __setitem__(self, key, value):
 		if key in __fields:
-			if key in self._data:
-				self._data[key] = value
+			self._data[key] = value
+			return
 		raise AttributeError(key + " not found")
 
 	def __str__(self):
