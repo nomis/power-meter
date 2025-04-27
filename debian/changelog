@@ -1,3 +1,9 @@
+power-meter (21) focal; urgency=medium
+
+  * Calculate apparentPower and reactivePower
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 27 Apr 2025 15:11:25 +0100
+
 power-meter (20-1) focal; urgency=medium
 
   * Update for focal
