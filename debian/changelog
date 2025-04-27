@@ -1,3 +1,9 @@
+power-meter (23) focal; urgency=medium
+
+  * Fix calculation
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 27 Apr 2025 16:01:05 +0100
+
 power-meter (22) focal; urgency=medium
 
   * Fixes for no reactiveEnergy
