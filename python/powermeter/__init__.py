@@ -1,5 +1,5 @@
 # power-meter - Arduino Power Meter Modbus Client
-# Copyright 2017  Simon Arlott
+# Copyright 2017,2025  Simon Arlott
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,6 +110,12 @@ class Reading:
 			if key in self._data:
 				return self._data[key]
 			return None
+		raise AttributeError(key + " not found")
+
+	def __setitem__(self, key, value):
+		if key in __fields:
+			if key in self._data:
+				self._data[key] = value
 		raise AttributeError(key + " not found")
 
 	def __str__(self):

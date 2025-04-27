@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # power-meter - Arduino Power Meter Modbus Client
-# Copyright 2017  Simon Arlott
+# Copyright 2017,2025  Simon Arlott
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@ def receive_loop(mq_name, dsn, meter):
 			(ts, active_energy, reactive_energy) = struct.unpack("=Qdd", data)
 		elif len(data) >= 16:
 			(ts, active_energy) = struct.unpack("=Qd", data)
-			reactiveEnergy = None
+			reactive_energy = None
 		else:
 			continue
 
