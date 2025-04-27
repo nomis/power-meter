@@ -72,6 +72,19 @@ class RRD:
 			)
 
 	def update(self, reading):
+		if reading["apparentPower"] is None:
+			apparentPower = reading["activePower"] / max(0.01, status["powerFactor"])
+			reading["apparentPower"] = round(apparentPower, 1)
+
+			if reading["reactivePower"] is None:
+				reading["reactivePower"] = round(
+					math.sqrt(abs(apparentPower ** 2 - status["activePower"] ** 2)), 1
+				)
+		elif reading["reactivePower"] is None:
+			reading["reactivePower"] = round(
+				math.sqrt(abs(reading["apparentPower"] ** 2 - status["activePower"] ** 2)), 1
+			)
+
 		__update(self.filename_supply, reading, ["voltage", "frequency", "temperature"])
 		__update(self.filename_load, reading, ["current", "activePower", "reactivePower", "apparentPower", "powerFactor"])
 		systemd.daemon.notify("STATUS=Updated reading at " + str(reading.ts))
