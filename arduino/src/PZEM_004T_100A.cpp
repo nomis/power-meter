@@ -58,7 +58,7 @@ bool PZEM_004T_100A::readMeasurements() {
 		| (uint32_t)modbus.getResponseBuffer(0x0003), -1);
 	activeEnergy = Decimal(
 		((uint32_t)modbus.getResponseBuffer(0x0006) << 16)
-		| (uint32_t)modbus.getResponseBuffer(0x0005), 0);
+		| (uint32_t)modbus.getResponseBuffer(0x0005), -3);
 	frequency = Decimal(modbus.getResponseBuffer(0x0007), -1);
 	powerFactor = Decimal(modbus.getResponseBuffer(0x0008), -2);
 
