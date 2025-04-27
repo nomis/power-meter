@@ -1,3 +1,9 @@
+power-meter (25) focal; urgency=medium
+
+  * Missing math import
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 27 Apr 2025 16:08:42 +0100
+
 power-meter (24) focal; urgency=medium
 
   * Fix precision and setitem

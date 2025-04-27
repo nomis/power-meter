@@ -19,6 +19,7 @@
 import argparse
 import collections
 import logging
+import math
 import os
 import powermeter
 import re
