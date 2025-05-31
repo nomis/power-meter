@@ -1,3 +1,9 @@
+power-meter (25-1) jammy; urgency=medium
+
+  * Update for jammy
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sat, 31 May 2025 10:58:14 +0100
+
 power-meter (25) focal; urgency=medium
 
   * Missing math import
