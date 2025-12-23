@@ -1,6 +1,6 @@
 /*
  * power-meter - Arduino Power Meter Modbus Client
- * Copyright 2017  Simon Arlott
+ * Copyright 2017,2025  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,13 @@ constexpr auto *output = &Serial1;
 constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
 #endif
 
+#ifdef ARDUINO_ESP8266_WEMOS_D1R1
+constexpr int LED_PIN = -1;
+constexpr int CONFIGURE_PIN = 14;
+constexpr auto *output = &Serial1;
+constexpr unsigned long OUTPUT_BAUD_RATE = 115200;
+#endif
+
 // RS485
 #ifdef ARDUINO_AVR_MICRO
 constexpr int DE_PIN = 4;
@@ -49,6 +56,12 @@ constexpr auto *input = &Serial1;
 #endif
 
 #ifdef ARDUINO_ESP8266_ESP12
+constexpr int DE_PIN = 4;
+constexpr int RE_PIN = 5;
+constexpr auto *input = &Serial;
+#endif
+
+#ifdef ARDUINO_ESP8266_WEMOS_D1R1
 constexpr int DE_PIN = 4;
 constexpr int RE_PIN = 5;
 constexpr auto *input = &Serial;

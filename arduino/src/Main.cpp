@@ -101,6 +101,20 @@ void setup() {
 void loop() {
 	unsigned long start = millis();
 
+	if (CONFIGURE_PIN >= 0) {
+#ifdef POWER_METER_HAS_NETWORK
+		bool configure = digitalRead(CONFIGURE_PIN) == LOW;
+
+		ethernetNetwork.setConfigurationMode(configure);
+
+		if (configure) {
+			indicateStatus(false);
+			ethernetNetwork.loop();
+			return;
+		}
+#endif
+	}
+
 	if (*output) {
 		if (meter.read()) {
 			output->println(meter);
@@ -133,12 +147,6 @@ void loop() {
 
 #ifdef POWER_METER_HAS_NETWORK
 		ethernetNetwork.loop();
-#endif
-	}
-
-	if (CONFIGURE_PIN >= 0) {
-#ifdef POWER_METER_HAS_NETWORK
-		ethernetNetwork.setConfigurationMode(digitalRead(CONFIGURE_PIN) == LOW);
 #endif
 	}
 }
