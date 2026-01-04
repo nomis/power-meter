@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # power-meter - Arduino Power Meter Modbus Client
-# Copyright 2017,2025  Simon Arlott
+# Copyright 2017,2025-2026  Simon Arlott
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,11 +39,16 @@ db = None
 def cursor_insert_value(c, meter, ts, name, value):
 	exists = False
 
-	c.execute("SELECT value FROM readings_" + name + " WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
-	row = c.fetchone()
-	if row:
-		if row["value"] == decimal.Decimal(value).quantize(row["value"]):
-			exists = True
+	c.execute("SELECT 1 FROM readings_" + name + " WHERE meter = %(meter)s AND ts = %(ts)s", { "meter": meter, "ts": ts })
+	if c.fetchone():
+		exists = True
+
+	if not exists:
+		c.execute("SELECT value FROM readings_" + name + " WHERE meter = %(meter)s ORDER BY ts DESC LIMIT 1", { "meter": meter })
+		row = c.fetchone()
+		if row:
+			if row["value"] == decimal.Decimal(value).quantize(row["value"]) or row["ts"]:
+				exists = True
 
 	if not exists:
 		c.execute("INSERT INTO readings_" + name + " (meter, ts, value) VALUES(%(meter)s, %(ts)s, %(value)s)", { "meter": meter, "ts": ts, "value": value })

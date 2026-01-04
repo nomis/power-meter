@@ -1,3 +1,9 @@
+power-meter (26) jammy; urgency=medium
+
+  * Fix for duplicate readings
+
+ -- Simon Arlott <ubuntu@sa.me.uk>  Sun, 04 Jan 2026 19:15:58 +0000
+
 power-meter (25-1) jammy; urgency=medium
 
   * Update for jammy
